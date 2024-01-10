@@ -1,0 +1,67 @@
+﻿@model StudentMedicalCertificateSystem.Models.MedicalCertificates
+
+<h2>Создание новой заявки</h2>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    @await Html.PartialAsync("_StudentInputPartial", new StudentMedicalCertificateSystem.Models.Students())
+    
+    <div class="form-group">
+        <label asp-for="UserID" class="control-label">Выберите ответственного работника</label>
+        <select asp-for="UserID" asp-items="@ViewBag.StaffList" class="form-control">
+            <option value="">Выберите ответственного работника</option>
+        </select>
+        <span asp-validation-for="UserID" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ClinicID" class="control-label">Выберите клинику</label>
+        <select asp-for="ClinicID" asp-items="@ViewBag.StatusList" class="form-control">
+            <option value="">Выберите статус</option>
+        </select>
+        <span asp-validation-for="ClinicID" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DiagnosisID" class="control-label">Выберите диагноз</label>
+        <select asp-for="DiagnosisID" asp-items="@ViewBag.DiagnosisList" class="form-control">
+            <option value="">Выберите диагноз</option>
+        </select>
+        <span asp-validation-for="DiagnosisID" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="CertificatePath" class="control-label">Путь к справке</label>
+        <input asp-for="CertificatePath" name="file" type="file" class="form-control" />
+        <span asp-validation-for="CertificatePath" class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group">
+        <label asp-for="IlnessDate" class="control-label">Дата начала болезни</label>
+        <input asp-for="IlnessDate" class="form-control" />
+        <span asp-validation-for="IlnessDate" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="RecoveryDate" class="control-label">Дата выздоровления</label>
+        <input asp-for="RecoveryDate" class="form-control" />
+        <span asp-validation-for="RecoveryDate" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Answer" class="control-label">Комментарии работника</label>
+        <input asp-for="Answer" class="form-control" />
+        <span asp-validation-for="Answer" class="text-danger"></span>
+    </div>
+    
+    <br />
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Создать</button>
+    </div>
+</form>
+
+<a asp-action="Index">Назад ко всем справкам</a>
+
