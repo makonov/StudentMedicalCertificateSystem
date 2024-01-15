@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using StudentMedicalCertificateSystem.Data;
+using StudentMedicalCertificateSystem.Interfaces;
+using StudentMedicalCertificateSystem.Repository;
 
 namespace StudentMedicalCertificateSystem
 {
@@ -11,6 +13,11 @@ namespace StudentMedicalCertificateSystem
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddScoped<IMedicalCertificateRepository, MedicalCertificateRepository>();
+            builder.Services.AddScoped<IClinicRepository, ClinicRepository>();
+            builder.Services.AddScoped<IDiagnosisRepository, DiagnosisRepository>();
+            builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));

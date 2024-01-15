@@ -10,13 +10,6 @@ namespace StudentMedicalCertificateSystem.Data
 
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseLazyLoadingProxies();
-            base.OnConfiguring(optionsBuilder);
-        }
-
-
         public DbSet<Users> Users { get; set; }
         public DbSet<StudentGroups> StudentGroups { get; set; }
         public DbSet<EducationalOffices> EducationalOffices { get; set; }

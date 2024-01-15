@@ -5,69 +5,73 @@ using Microsoft.EntityFrameworkCore;
 using StudentMedicalCertificateSystem.Data;
 using StudentMedicalCertificateSystem.Models;
 using Microsoft.AspNetCore.Http;
+using StudentMedicalCertificateSystem.Interfaces;
+using System.Collections;
 
 namespace StudentMedicalCertificateSystem.Controllers
 {
     public class MedicalCertificatesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IMedicalCertificateRepository _certificateRepository;
+        private readonly IDiagnosisRepository _diagnosisRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IClinicRepository _clinicRepository;
+        private readonly IStudentRepository _studentRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public MedicalCertificatesController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public MedicalCertificatesController(IMedicalCertificateRepository certificateRepository, IDiagnosisRepository diagnosisRepository, IUserRepository userRepository,IClinicRepository clinicRepository, IStudentRepository studentRepository, IWebHostEnvironment webHostEnvironment)
         {
-            _context = context;
+            _certificateRepository = certificateRepository;
+            _diagnosisRepository = diagnosisRepository;
+            _userRepository = userRepository;
+            _clinicRepository = clinicRepository;
+            _studentRepository = studentRepository;
             _webHostEnvironment = webHostEnvironment;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var certificates = _context.MedicalCertificates.ToList();
-            certificates.Reverse();
+            var certificates = await _certificateRepository.GetAllSortedAndIncludedAsync();
             return View(certificates);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            MakeLists();
+            await MakeLists();
             return View();
         }
         
-        private void MakeLists()
+        private async Task MakeLists()
         {
-            ViewBag.DiagnosisList = new SelectList(GetDiagnoses(), "Value", "Text");
-            ViewBag.StaffList = new SelectList(GetStaff(), "Value", "Text");
-            ViewBag.StatusList = new SelectList(GetClinics(), "Value", "Text");
+            
+            ViewBag.StaffList = new SelectList(await GetStaff(), "Value", "Text");
+            ViewBag.DiagnosisList = new SelectList(await GetDiagnoses(), "Value", "Text");
+            ViewBag.StatusList = new SelectList(await GetClinics(), "Value", "Text");
         }
 
-        private List<SelectListItem> GetDiagnoses()
+        private async Task<List<SelectListItem>> GetDiagnoses()
         {
             // Здесь получаем список диагнозов из базы данных
-            var diagnoses = _context.Diagnoses.ToList();
-            return diagnoses.Select(d => new SelectListItem { Value = d.DiagnosisID.ToString(), Text = d.DiagnosisName }).ToList();
+            return await _diagnosisRepository.GetDiagnosesAsSelectList();
         }
 
-        private List<SelectListItem> GetStaff()
+        private async Task<List<SelectListItem>> GetStaff()
         {
             // Здесь получаем список работников из базы данных
-            var staff = _context.Users.Select(u => u).Where(u => u.IsAdmin).ToList();
-            return staff.Select(s => new SelectListItem { Value = s.UserID.ToString(), Text = s.LastName + " " + s.FirstName + " " + s.Patronymic }).ToList();
+            return await _userRepository.GetUsersAsSelectList();
         }
 
-        private List<SelectListItem> GetClinics()
+        private async Task<List<SelectListItem>> GetClinics()
         {
             // Здесь получаем список работников из базы данных
-            var clinics = _context.Clinics.ToList();
-            return clinics.Select(c => new SelectListItem { Value = c.ClinicID.ToString(), Text = c.ClinicName }).ToList();
+            return await _clinicRepository.GetClinicsAsSelectList();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(MedicalCertificates certificate, Students student, IFormFile file)
+        public async Task<IActionResult> Create(MedicalCertificates certificate, Students student, IFormFile file)
         {
-            var foundStudent = _context.Students.SingleOrDefault(s =>
-                s.LastName == student.LastName &&
-                s.FirstName == student.FirstName &&
-                s.Patronymic == student.Patronymic);
+            Students foundStudent = await _studentRepository.GetDefaultByFullName(student.LastName, student.FirstName, student.Patronymic);
 
             if (foundStudent != null)
             {
@@ -77,7 +81,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 if (file == null || file.Length == 0)
                 {
                     ModelState.AddModelError("CertificatePath", "Выберите справку для загрузки.");
-                    MakeLists();
+                    await MakeLists();
                     return View(certificate);
                 }
 
@@ -87,7 +91,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 if (!allowedExtensions.Contains(fileExtension))
                 {
                     ModelState.AddModelError("CertificatePath", "Выберите файл в формате jpg, jpeg или png.");
-                    MakeLists();
+                    await MakeLists();
                     return View(certificate);
                 }
 
@@ -105,30 +109,24 @@ namespace StudentMedicalCertificateSystem.Controllers
                 if (certificate.IlnessDate == DateTime.Parse("01.01.0001"))
                 {
                     ModelState.AddModelError("IlnessDate", "Необходимо выбрать дату!");
-                    MakeLists();
+                    await MakeLists();
                     return View(certificate);
                 }
 
                 if (certificate.RecoveryDate == DateTime.Parse("01.01.0001"))
                 {
                     ModelState.AddModelError("IlnessDate", "Необходимо выбрать дату!");
-                    MakeLists();
+                    await MakeLists();
                     return View(certificate);
                 }
 
                 // Остальная логика сохранения MedicalCertificates
                 certificate.CreatedAt = DateTime.Now;
                 certificate.UpdatedAt = DateTime.Now;
-                _context.MedicalCertificates.Add(certificate);
-                _context.SaveChanges();
+                _certificateRepository.Add(certificate);
+                _certificateRepository.Save();
 
-                var updatedCertificates = _context.MedicalCertificates
-    .OrderByDescending(x => x.CertificateID)
-    .Include(c => c.Student)
-    .Include(c => c.User)
-    .Include(c => c.Clinic)
-    .Include(c => c.Diagnosis)
-    .ToList();
+                var updatedCertificates = await _certificateRepository.GetAllSortedAndIncludedAsync();
 
                 return View("Index", updatedCertificates);
             }
@@ -137,16 +135,16 @@ namespace StudentMedicalCertificateSystem.Controllers
                 ModelState.AddModelError("FirstName", "Пользователь не найден.");
                 ModelState.AddModelError("LastName", "Пользователь не найден.");
                 ModelState.AddModelError("Patronymic", "Пользователь не найден.");
-                MakeLists();
+                await MakeLists();
                 return View(certificate);
             }
         }
 
 
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var certificate = _context.MedicalCertificates.Find(id);
-            MakeLists();
+            var certificate = await _certificateRepository.GetIncludedStudentByIdAsync(id);
+            await MakeLists();
 
             if (certificate == null)
             {
@@ -158,15 +156,15 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, MedicalCertificates certificate, IFormFile file)
+        public async Task<IActionResult> Edit(int id, MedicalCertificates certificate, IFormFile file)
         {
             if (id != certificate.CertificateID)
             {
                 return NotFound();
             }
 
-            
-            var existingCertificate = _context.MedicalCertificates.Find(id);
+
+            var existingCertificate = await _certificateRepository.GetByIdAsync(id);
 
             if (existingCertificate == null)
             {
@@ -182,8 +180,8 @@ namespace StudentMedicalCertificateSystem.Controllers
                 if (!allowedExtensions.Contains(fileExtension))
                 {
                     ModelState.AddModelError("CertificatePath", "Выберите файл в формате jpg, jpeg или png.");
-                    MakeLists();
-                    certificate = _context.MedicalCertificates.Find(id);
+                    await MakeLists();
+                    certificate = await _certificateRepository.GetIncludedStudentByIdAsync(id);
                     return View(certificate);
                 }
 
@@ -216,17 +214,16 @@ namespace StudentMedicalCertificateSystem.Controllers
 
             certificate.CreatedAt = existingCertificate.CreatedAt;
             certificate.UpdatedAt = DateTime.Now;
-            _context.Entry(existingCertificate).CurrentValues.SetValues(certificate);
-            _context.SaveChanges();
+            await _certificateRepository.UpdateByAnotherCertificateValues(existingCertificate, certificate);
+            _certificateRepository.Save();
 
-            var updatedCertificates = _context.MedicalCertificates.ToList();
+            var updatedCertificates = await _certificateRepository.GetAllSortedAndIncludedAsync();
             return View("Index", updatedCertificates);
-            
         }
 
 
         [HttpPost]
-        public IActionResult Filter(Students student, DateTime startOfIlness, DateTime endOfIlness)
+        public async Task<IActionResult> Filter(Students student, DateTime startOfIlness, DateTime endOfIlness)
         {
             ModelState.Remove(nameof(Students.LastName));
             ModelState.Remove(nameof(Students.FirstName));
@@ -243,38 +240,31 @@ namespace StudentMedicalCertificateSystem.Controllers
             {
                 if (lastName != null && firstName != null && patronymic != null)
                 {
-                    students = _context.Students.Select(s => s)
-                    .Where(s => s.LastName == lastName && s.FirstName == firstName && s.Patronymic == patronymic).ToList();
+                    students = await _studentRepository.GetAllByFullName(lastName, firstName, patronymic);
                 }
                 else if (lastName != null && firstName != null && patronymic == null)
                 {
-                    students = _context.Students.Select(s => s)
-                    .Where(s => s.LastName == lastName && s.FirstName == firstName).ToList();
+                    students = await _studentRepository.GetAllByLastAndFirstNames(lastName, firstName);
                 }
                 else if (lastName != null && firstName == null && patronymic != null)
                 {
-                    students = _context.Students.Select(s => s)
-                    .Where(s => s.LastName == lastName && s.Patronymic == patronymic).ToList();
+                    students = await _studentRepository.GetAllByLastNameAndPatronymic(lastName, patronymic);
                 }
                 else if (lastName != null && firstName == null && patronymic == null)
                 {
-                    students = _context.Students.Select(s => s)
-                    .Where(s => s.LastName == lastName).ToList();
+                    students = await _studentRepository.GetAllByLastName(lastName);
                 }
                 else if (lastName == null && firstName != null && patronymic != null)
                 {
-                    students = _context.Students.Select(s => s)
-                    .Where(s => s.FirstName == firstName && s.Patronymic == patronymic).ToList();
+                    students = await _studentRepository.GetAllByFirstNameAndPatronymic(firstName, patronymic);
                 }
                 else if (lastName == null && firstName == null && patronymic != null)
                 {
-                    students = _context.Students.Select(s => s)
-                    .Where(s => s.Patronymic == patronymic).ToList();
+                    students = await _studentRepository.GetAllByPatronymic(patronymic);
                 }
                 else if (lastName == null && firstName != null && patronymic == null)
                 {
-                    students = _context.Students.Select(s => s)
-                    .Where(s => s.FirstName == firstName).ToList();
+                    students = await _studentRepository.GetAllByFirstName(firstName);
                 }
 
                 if (students.Count() == 0)
@@ -282,12 +272,12 @@ namespace StudentMedicalCertificateSystem.Controllers
                     ModelState.AddModelError("LastName", "Студент не найден");
                     ModelState.AddModelError("FirstName", "Студент не найден");
                     ModelState.AddModelError("Patronymic", "Студент не найден");
-                    return View("Index", _context.MedicalCertificates.ToList());
+                    return View("Index", await _certificateRepository.GetAllSortedAndIncludedAsync());
                 }
 
                 foreach (var s in students)
                 {
-                    var foundCertificates = _context.MedicalCertificates.Select(c => c).Where(c => c.StudentID == s.StudentID).ToList();
+                    var foundCertificates = await _certificateRepository.GetAllByStudentId(s.StudentID);
                     certificates = certificates.Union(foundCertificates).ToList();
                 }
 
@@ -302,7 +292,7 @@ namespace StudentMedicalCertificateSystem.Controllers
             }
             else if (isValid && certificates.Count == 0)
             {
-                certificates = _context.MedicalCertificates.Select(c => c).Where(c => c.IlnessDate >= startOfIlness && c.RecoveryDate <= endOfIlness).ToList();
+                certificates = await _certificateRepository.GetAllByTimePeriod(startOfIlness, endOfIlness);
             }
 
             certificates.Reverse();
@@ -310,15 +300,14 @@ namespace StudentMedicalCertificateSystem.Controllers
             return View("Index", certificates);
         }
 
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var certificate = _context.MedicalCertificates
-                .FirstOrDefault(m => m.CertificateID == id);
+            var certificate = await _certificateRepository.GetIncludedByIdAsync(id);
 
             if (certificate == null)
             {
@@ -330,9 +319,9 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var certificate = _context.MedicalCertificates.Find(id);
+            var certificate = await _certificateRepository.GetByIdAsync(id);
 
             if (certificate == null)
             {
@@ -349,8 +338,8 @@ namespace StudentMedicalCertificateSystem.Controllers
                 }
             }
 
-            _context.MedicalCertificates.Remove(certificate);
-            _context.SaveChanges();
+            _certificateRepository.Delete(certificate);
+            _certificateRepository.Save();
 
             return RedirectToAction("Index");
         }
