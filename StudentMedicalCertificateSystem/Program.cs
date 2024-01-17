@@ -18,6 +18,7 @@ namespace StudentMedicalCertificateSystem
             builder.Services.AddScoped<IDiagnosisRepository, DiagnosisRepository>();
             builder.Services.AddScoped<IStudentRepository, StudentRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IPhotoService, PhotoService>();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));

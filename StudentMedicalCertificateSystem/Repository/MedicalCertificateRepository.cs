@@ -102,5 +102,19 @@ namespace StudentMedicalCertificateSystem.Repository
         {
             return await _context.MedicalCertificates.Select(c => c).Where(c => c.StudentID == studentId).ToListAsync();
         }
+
+        public async Task<List<MedicalCertificates>> GetSortedAndIncludedFromList(List<MedicalCertificates> list)
+        {
+            var certificateIds = list.Select(c => c.CertificateID).ToList();
+
+            return await _context.MedicalCertificates
+                .Where(c => certificateIds.Contains(c.CertificateID))
+                .OrderByDescending(x => x.CertificateID)
+                .Include(c => c.Student)
+                .Include(c => c.User)
+                .Include(c => c.Clinic)
+                .Include(c => c.Diagnosis)
+                .ToListAsync();
+        }
     }
 }

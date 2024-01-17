@@ -7,6 +7,7 @@ using StudentMedicalCertificateSystem.Models;
 using Microsoft.AspNetCore.Http;
 using StudentMedicalCertificateSystem.Interfaces;
 using System.Collections;
+using StudentMedicalCertificateSystem.Repository;
 
 namespace StudentMedicalCertificateSystem.Controllers
 {
@@ -17,16 +18,21 @@ namespace StudentMedicalCertificateSystem.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IClinicRepository _clinicRepository;
         private readonly IStudentRepository _studentRepository;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IPhotoService _photoService;
 
-        public MedicalCertificatesController(IMedicalCertificateRepository certificateRepository, IDiagnosisRepository diagnosisRepository, IUserRepository userRepository,IClinicRepository clinicRepository, IStudentRepository studentRepository, IWebHostEnvironment webHostEnvironment)
+        public MedicalCertificatesController(IMedicalCertificateRepository certificateRepository, 
+            IDiagnosisRepository diagnosisRepository, 
+            IUserRepository userRepository,
+            IClinicRepository clinicRepository,
+            IStudentRepository studentRepository, 
+            IPhotoService photoService)
         {
             _certificateRepository = certificateRepository;
             _diagnosisRepository = diagnosisRepository;
             _userRepository = userRepository;
             _clinicRepository = clinicRepository;
             _studentRepository = studentRepository;
-            _webHostEnvironment = webHostEnvironment;
+            _photoService = photoService;
         }
 
         public async Task<IActionResult> Index()
@@ -46,7 +52,7 @@ namespace StudentMedicalCertificateSystem.Controllers
             
             ViewBag.StaffList = new SelectList(await GetStaff(), "Value", "Text");
             ViewBag.DiagnosisList = new SelectList(await GetDiagnoses(), "Value", "Text");
-            ViewBag.StatusList = new SelectList(await GetClinics(), "Value", "Text");
+            ViewBag.ClinicList = new SelectList(await GetClinics(), "Value", "Text");
         }
 
         private async Task<List<SelectListItem>> GetDiagnoses()
@@ -85,26 +91,16 @@ namespace StudentMedicalCertificateSystem.Controllers
                     return View(certificate);
                 }
 
-                // Проверка формата файла
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
-                var fileExtension = Path.GetExtension(file.FileName).ToLower();
-                if (!allowedExtensions.Contains(fileExtension))
+                var uploadResult = await _photoService.UploadPhotoAsync(file, "Certificates");
+
+                if (!uploadResult.IsExtensionValid)
                 {
                     ModelState.AddModelError("CertificatePath", "Выберите файл в формате jpg, jpeg или png.");
                     await MakeLists();
                     return View(certificate);
                 }
 
-                // Обработка загрузки файла
-                var fileName = Guid.NewGuid().ToString() + fileExtension;
-                var filePath = Path.Combine(_webHostEnvironment.WebRootPath, "Certificates", fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    file.CopyTo(stream);
-                }
-
-                certificate.CertificatePath = "/Certificates/" + fileName;
+                certificate.CertificatePath = "/Certificates/" + uploadResult.FileName;
 
                 if (certificate.IlnessDate == DateTime.Parse("01.01.0001"))
                 {
@@ -174,10 +170,9 @@ namespace StudentMedicalCertificateSystem.Controllers
             // Проверка на наличие и формат нового файла
             if (file != null && file.Length > 0)
             {
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
-                var fileExtension = Path.GetExtension(file.FileName).ToLower();
+                var replacementResult = await _photoService.ReplacePhotoAsync(file, "Certificates", existingCertificate.CertificatePath);
 
-                if (!allowedExtensions.Contains(fileExtension))
+                if (!replacementResult.IsReplacementSuccess)
                 {
                     ModelState.AddModelError("CertificatePath", "Выберите файл в формате jpg, jpeg или png.");
                     await MakeLists();
@@ -185,27 +180,8 @@ namespace StudentMedicalCertificateSystem.Controllers
                     return View(certificate);
                 }
 
-                // Удаление старого файла
-                if (!string.IsNullOrEmpty(existingCertificate.CertificatePath))
-                {
-                    var oldFilePath = Path.Combine(_webHostEnvironment.WebRootPath, existingCertificate.CertificatePath.TrimStart('/'));
-                    if (System.IO.File.Exists(oldFilePath))
-                    {
-                        System.IO.File.Delete(oldFilePath);
-                    }
-                }
-
-                // Обработка загрузки нового файла
-                var newFileName = Guid.NewGuid().ToString() + fileExtension;
-                var newFilePath = Path.Combine(_webHostEnvironment.WebRootPath, "Certificates", newFileName);
-
-                using (var stream = new FileStream(newFilePath, FileMode.Create))
-                {
-                    file.CopyTo(stream);
-                }
-
                 // Присвоение пути к новому файлу в модели
-                certificate.CertificatePath = "/Certificates/" + newFileName;
+                certificate.CertificatePath = "/Certificates/" + replacementResult.NewFileName;
             }
             else
             {
@@ -295,9 +271,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 certificates = await _certificateRepository.GetAllByTimePeriod(startOfIlness, endOfIlness);
             }
 
-            certificates.Reverse();
-
-            return View("Index", certificates);
+            return View("Index", await _certificateRepository.GetSortedAndIncludedFromList(certificates));
         }
 
         public async Task<IActionResult> Delete(int id)
@@ -328,15 +302,8 @@ namespace StudentMedicalCertificateSystem.Controllers
                 return NotFound();
             }
 
-            // Удаление старого файла
-            if (!string.IsNullOrEmpty(certificate.CertificatePath))
-            {
-                var oldFilePath = Path.Combine(_webHostEnvironment.WebRootPath, certificate.CertificatePath.TrimStart('/'));
-                if (System.IO.File.Exists(oldFilePath))
-                {
-                    System.IO.File.Delete(oldFilePath);
-                }
-            }
+            // Удаление файла с использованием PhotoService
+            await _photoService.DeletePhotoAsync(certificate.CertificatePath);
 
             _certificateRepository.Delete(certificate);
             _certificateRepository.Save();

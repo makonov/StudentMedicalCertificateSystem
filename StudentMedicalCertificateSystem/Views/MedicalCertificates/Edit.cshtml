@@ -22,7 +22,7 @@
 
     <div class="form-group">
         <label asp-for="ClinicID" class="control-label">Выберите клинику</label>
-        <select asp-for="ClinicID" asp-items="@ViewBag.StatusList" class="form-control"></select>
+        <select asp-for="ClinicID" asp-items="@ViewBag.ClinicList" class="form-control"></select>
         <span asp-validation-for="ClinicID" class="text-danger"></span>
     </div>
 

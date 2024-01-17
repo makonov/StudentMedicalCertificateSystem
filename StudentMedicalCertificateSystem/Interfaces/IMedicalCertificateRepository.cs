@@ -9,6 +9,7 @@ namespace StudentMedicalCertificateSystem.Interfaces
         Task<MedicalCertificates> GetByIdAsync(int id);
         Task<MedicalCertificates> GetIncludedByIdAsync(int id);
         Task<MedicalCertificates> GetIncludedStudentByIdAsync(int id);
+        Task<List<MedicalCertificates>> GetSortedAndIncludedFromList(List<MedicalCertificates> list);
         Task<List<MedicalCertificates>> GetAllByStudentId(int studentId);
         Task<List<MedicalCertificates>> GetAllByFullName(string lastName, string firstName, string patronymic);
         Task<List<MedicalCertificates>> GetAllByLastAndFirstNames(string lastName, string firstName);
