@@ -3,7 +3,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace StudentMedicalCertificateSystem.Models
 {
-    public class StudentGroups
+    public class StudentGroup
     {
         [Key]
         public int GroupID { get; set; }

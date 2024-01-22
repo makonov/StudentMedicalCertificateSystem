@@ -4,30 +4,25 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace StudentMedicalCertificateSystem.Models
 {
-    public class MedicalCertificates
+    public class MedicalCertificate
     {
         [Key]
         public int CertificateID { get; set; }
 
-        [ForeignKey("Students")]
+        [ForeignKey("Student")]
         [Required(ErrorMessage = "ID студента обязателен")]
         public int StudentID { get; set; }
-        public virtual Students? Student { get; set; }
+        public virtual Student? Student { get; set; }
 
-        [ForeignKey("Users")]
-        [Required(ErrorMessage = "ID ответственного работника обязателен")]
-        public int UserID { get; set; }
-        public virtual Users? User { get; set; }
-
-        [ForeignKey("Clinics")]
+        [ForeignKey("Clinic")]
         [Required(ErrorMessage = "ID клиники обязателен")]
         public int ClinicID { get; set; }
-        public virtual Clinics? Clinic { get; set; }
+        public virtual Clinic? Clinic { get; set; }
 
-        [ForeignKey("Diagnoses")]
+        [ForeignKey("Diagnosis")]
         [Required(ErrorMessage = "ID диагноза обязателен")]
         public int DiagnosisID { get; set; }
-        public virtual Diagnoses? Diagnosis { get; set; }
+        public virtual Diagnosis? Diagnosis { get; set; }
 
         public string? CertificatePath { get; set; }
 

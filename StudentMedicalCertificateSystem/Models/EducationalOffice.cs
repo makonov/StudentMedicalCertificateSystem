@@ -2,10 +2,10 @@
 
 namespace StudentMedicalCertificateSystem.Models
 {
-    public class Diagnoses
+    public class EducationalOffice
     {
         [Key]
-        public int DiagnosisID { get; set; }
-        public string? DiagnosisName { get; set; }
+        public int OfficeID { get; set; }
+        public string? OfficeName { get; set; }
     }
 }

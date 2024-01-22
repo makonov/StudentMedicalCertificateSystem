@@ -3,18 +3,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace StudentMedicalCertificateSystem.Models
 {
-    public class Students
+    public class Student
     {
         [Key]
         public int StudentID { get; set; }
 
-        [ForeignKey("StudentGroups")]
+        [ForeignKey("StudentGroup")]
         public int GroupID { get; set; }
-        public virtual StudentGroups? Group { get; set; }
+        public virtual StudentGroup? Group { get; set; }
 
-        [ForeignKey("EducationalOffices")]
+        [ForeignKey("EducationalOffice")]
         public int OfficeID { get; set; }
-        public virtual EducationalOffices? Office { get; set; }
+        public virtual EducationalOffice? Office { get; set; }
         
         [Required(ErrorMessage = "Поле 'Фамилия' обязательно для заполнения")]
         public string? LastName { get; set; }

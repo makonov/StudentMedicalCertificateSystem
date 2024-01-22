@@ -16,31 +16,31 @@ namespace StudentMedicalCertificateSystem.Repository
             _context = context;
         }
 
-        public bool Add(Users user)
+        public bool Add(User user)
         {
             _context.Add(user);
             return Save();
         }
 
-        public bool Delete(Users user)
+        public bool Delete(User user)
         {
             _context.Remove(user);
             return Save();
         }
 
-        public async Task<List<Users>> GetAll()
+        public async Task<List<User>> GetAll()
         {
             return await _context.Users.ToListAsync();
         }
 
-        public async Task<Users> GetByIdAsync(int id)
+        public async Task<User> GetByIdAsync(string id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.UserID == id);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<List<SelectListItem>> GetUsersAsSelectList()
         {
-            return await _context.Users.Select(u => new SelectListItem { Value = u.UserID.ToString(), Text = u.LastName + " " + u.FirstName + " " + u.Patronymic }).ToListAsync();
+            return await _context.Users.Select(u => new SelectListItem { Value = u.Id.ToString(), Text = u.LastName + " " + u.FirstName + " " + u.Patronymic }).ToListAsync();
         }
 
         public bool Save()
@@ -49,7 +49,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return saved > 0 ? true : false;
         }
 
-        public bool Update(Users user)
+        public bool Update(User user)
         {
             _context.Update(user);
             return Save();

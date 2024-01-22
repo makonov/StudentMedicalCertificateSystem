@@ -5,12 +5,12 @@ namespace StudentMedicalCertificateSystem.Interfaces
 {
     public interface IUserRepository
     {
-        Task<List<Users>> GetAll();
+        Task<List<User>> GetAll();
         Task<List<SelectListItem>> GetUsersAsSelectList();
-        Task<Users> GetByIdAsync(int id);
-        bool Add(Users user);
-        bool Update(Users user);
-        bool Delete(Users user);
+        Task<User> GetByIdAsync(string id);
+        bool Add(User user);
+        bool Update(User user);
+        bool Delete(User user);
         bool Save();
     }
 }

@@ -14,24 +14,24 @@ namespace StudentMedicalCertificateSystem.Repository
             _context = context;
         }
 
-        public bool Add(Diagnoses diagnosis)
+        public bool Add(Diagnosis diagnosis)
         {
             _context.Add(diagnosis);
             return Save();
         }
 
-        public bool Delete(Diagnoses diagnosis)
+        public bool Delete(Diagnosis diagnosis)
         {
             _context.Remove(diagnosis);
             return Save();
         }
 
-        public async Task<List<Diagnoses>> GetAll()
+        public async Task<List<Diagnosis>> GetAll()
         {
             return await _context.Diagnoses.ToListAsync();
         }
 
-        public async Task<Diagnoses> GetByIdAsync(int id)
+        public async Task<Diagnosis> GetByIdAsync(int id)
         {
             return await _context.Diagnoses.FirstOrDefaultAsync(d => d.DiagnosisID == id);
         }
@@ -47,7 +47,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return saved > 0 ? true : false;
         }
 
-        public bool Update(Diagnoses diagnosis)
+        public bool Update(Diagnosis diagnosis)
         {
             _context.Update(diagnosis);
             return Save();

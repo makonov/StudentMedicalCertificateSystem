@@ -1,4 +1,4 @@
-﻿@model StudentMedicalCertificateSystem.Models.MedicalCertificates
+﻿@model StudentMedicalCertificateSystem.Models.MedicalCertificate
 
 <h2>Редактирование заявки</h2>
 
@@ -13,12 +13,6 @@
 
     <input asp-for="CertificateID" type="hidden" />
     <input asp-for="StudentID" type="hidden" />
-
-    <div class="form-group">
-        <label asp-for="UserID" class="control-label">Выберите ответственного работника</label>
-        <select asp-for="UserID" asp-items="@ViewBag.StaffList" class="form-control"></select>
-        <span asp-validation-for="UserID" class="text-danger"></span>
-    </div>
 
     <div class="form-group">
         <label asp-for="ClinicID" class="control-label">Выберите клинику</label>

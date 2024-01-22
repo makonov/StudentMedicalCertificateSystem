@@ -5,12 +5,12 @@ namespace StudentMedicalCertificateSystem.Interfaces
 {
     public interface IDiagnosisRepository
     {
-        Task<List<Diagnoses>> GetAll();
+        Task<List<Diagnosis>> GetAll();
         Task<List<SelectListItem>> GetDiagnosesAsSelectList();
-        Task<Diagnoses> GetByIdAsync(int id);
-        bool Add(Diagnoses diagnosis);
-        bool Update(Diagnoses diagnosis);
-        bool Delete(Diagnoses diagnosis);
+        Task<Diagnosis> GetByIdAsync(int id);
+        bool Add(Diagnosis diagnosis);
+        bool Update(Diagnosis diagnosis);
+        bool Delete(Diagnosis diagnosis);
         bool Save();
     }
 }

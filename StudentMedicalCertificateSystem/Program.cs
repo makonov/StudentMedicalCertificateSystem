@@ -1,13 +1,16 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StudentMedicalCertificateSystem.Data;
 using StudentMedicalCertificateSystem.Interfaces;
+using StudentMedicalCertificateSystem.Models;
 using StudentMedicalCertificateSystem.Repository;
 
 namespace StudentMedicalCertificateSystem
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public async static Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -23,8 +26,28 @@ namespace StudentMedicalCertificateSystem
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+            builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+            builder.Services.AddMemoryCache();
+            builder.Services.AddSession();
+            //builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
+            {
+                options.LoginPath = "/Account/Login";
+                options.AccessDeniedPath = "/Account/AccessDenied";
+            });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminPolicy", policy => policy.RequireRole("admin"));
+            });
 
             var app = builder.Build();
+
+            if (args.Length == 1 && args[0].ToLower() == "seeddata")
+            {
+                await Seed.SeedUsersAndRolesAsync(app);
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
@@ -39,6 +62,7 @@ namespace StudentMedicalCertificateSystem
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
@@ -47,7 +71,7 @@ namespace StudentMedicalCertificateSystem
 
             app.MapControllerRoute(
                 name: "medicalCertificates",
-                pattern: "{controller=MedicalCertificates}/{action=Index}/{id?}");
+                pattern: "{controller=MedicalCertificate}/{action=Index}/{id?}");
 
             app.Run();
         }

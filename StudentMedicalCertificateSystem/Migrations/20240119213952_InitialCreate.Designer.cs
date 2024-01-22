@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentMedicalCertificateSystem.Data;
 
@@ -11,9 +12,11 @@ using StudentMedicalCertificateSystem.Data;
 namespace StudentMedicalCertificateSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240119213952_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -168,7 +171,7 @@ namespace StudentMedicalCertificateSystem.Migrations
 
                     b.HasKey("ClinicID");
 
-                    b.ToTable("Clinics", (string)null);
+                    b.ToTable("Clinics");
                 });
 
             modelBuilder.Entity("StudentMedicalCertificateSystem.Models.Diagnosis", b =>
@@ -184,7 +187,7 @@ namespace StudentMedicalCertificateSystem.Migrations
 
                     b.HasKey("DiagnosisID");
 
-                    b.ToTable("Diagnoses", (string)null);
+                    b.ToTable("Diagnoses");
                 });
 
             modelBuilder.Entity("StudentMedicalCertificateSystem.Models.EducationalOffice", b =>
@@ -200,7 +203,7 @@ namespace StudentMedicalCertificateSystem.Migrations
 
                     b.HasKey("OfficeID");
 
-                    b.ToTable("EducationalOffices", (string)null);
+                    b.ToTable("EducationalOffices");
                 });
 
             modelBuilder.Entity("StudentMedicalCertificateSystem.Models.MedicalCertificate", b =>
@@ -246,7 +249,7 @@ namespace StudentMedicalCertificateSystem.Migrations
 
                     b.HasIndex("StudentID");
 
-                    b.ToTable("MedicalCertificates", (string)null);
+                    b.ToTable("MedicalCertificates");
                 });
 
             modelBuilder.Entity("StudentMedicalCertificateSystem.Models.Student", b =>
@@ -287,7 +290,7 @@ namespace StudentMedicalCertificateSystem.Migrations
 
                     b.HasIndex("OfficeID");
 
-                    b.ToTable("Students", (string)null);
+                    b.ToTable("Students");
                 });
 
             modelBuilder.Entity("StudentMedicalCertificateSystem.Models.StudentGroup", b =>
@@ -303,7 +306,7 @@ namespace StudentMedicalCertificateSystem.Migrations
 
                     b.HasKey("GroupID");
 
-                    b.ToTable("StudentGroups", (string)null);
+                    b.ToTable("StudentGroups");
                 });
 
             modelBuilder.Entity("StudentMedicalCertificateSystem.Models.User", b =>

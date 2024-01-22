@@ -5,19 +5,19 @@ namespace StudentMedicalCertificateSystem.Interfaces
 {
     public interface IStudentRepository
     {
-        Task<List<Students>> GetAll();
-        Task<Students> GetByIdAsync(int id);
-        Task<Students> GetDefaultByFullName(string lastName, string  firstName, string patronymic);
-        Task<List<Students>> GetAllByFullName(string lastName, string firstName, string patronymic);
-        Task<List<Students>> GetAllByLastAndFirstNames(string lastName, string firstName);
-        Task<List<Students>> GetAllByLastNameAndPatronymic(string lastName, string patronymic);
-        Task<List<Students>> GetAllByLastName(string lastName);
-        Task<List<Students>> GetAllByFirstNameAndPatronymic(string firstName, string patronymic);
-        Task<List<Students>> GetAllByPatronymic(string patronymic);
-        Task<List<Students>> GetAllByFirstName(string firstName);
-        bool Add(Students student);
-        bool Update(Students student);
-        bool Delete(Students student);
+        Task<List<Student>> GetAll();
+        Task<Student> GetByIdAsync(int id);
+        Task<Student> GetDefaultByFullName(string lastName, string  firstName, string patronymic);
+        Task<List<Student>> GetAllByFullName(string lastName, string firstName, string patronymic);
+        Task<List<Student>> GetAllByLastAndFirstNames(string lastName, string firstName);
+        Task<List<Student>> GetAllByLastNameAndPatronymic(string lastName, string patronymic);
+        Task<List<Student>> GetAllByLastName(string lastName);
+        Task<List<Student>> GetAllByFirstNameAndPatronymic(string firstName, string patronymic);
+        Task<List<Student>> GetAllByPatronymic(string patronymic);
+        Task<List<Student>> GetAllByFirstName(string firstName);
+        bool Add(Student student);
+        bool Update(Student student);
+        bool Delete(Student student);
         bool Save();
     }
 }

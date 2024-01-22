@@ -1,4 +1,4 @@
-﻿@model IEnumerable<StudentMedicalCertificateSystem.Models.MedicalCertificates>
+﻿@model IEnumerable<StudentMedicalCertificateSystem.Models.MedicalCertificate>
 
 @{
     ViewData["Title"] = "Заявки";
@@ -7,7 +7,7 @@
 <a href="@Url.Action("Create")">Создать новую заявку</a>
 <br />
 
-@await Html.PartialAsync("_FilterPartial", new StudentMedicalCertificateSystem.Models.Students())
+@await Html.PartialAsync("_FilterPartial", new StudentMedicalCertificateSystem.Models.Student())
 @if (Model.Count() != 0)
 {
     <table>
@@ -15,7 +15,6 @@
             <tr>
                 <th>Номер заявки</th>
                 <th>Студент</th>
-                <th>Ответственный работник</th>
                 <th>Клиника</th>
                 <th>Диагноз</th>
                 <th>Справка</th>
@@ -33,11 +32,10 @@
                 <tr>
                     <td>@certificate.CertificateID</td>
                     <td>@certificate.Student.LastName @certificate.Student.FirstName @certificate.Student.Patronymic</td>
-                    <td>@certificate.User.LastName @certificate.User.FirstName @certificate.User.Patronymic</td>
                     <td>@certificate.Clinic.ClinicName</td>
                     <td>@certificate.Diagnosis.DiagnosisName</td>
                     <td>
-                        <a target="_blank" href="@Url.Action("ImageView", "MedicalCertificates", new { imagePath = certificate.CertificatePath })">Посмотреть справку</a>
+                        <a target="_blank" href="@Url.Action("ImageView", "MedicalCertificate", new { imagePath = certificate.CertificatePath })">Посмотреть справку</a>
                     </td>
                     <td>@certificate.IlnessDate.ToString("dd.MM.yyyy")</td>
                     <td>@certificate.RecoveryDate.ToString("dd.MM.yyyy")</td>
@@ -45,8 +43,8 @@
                     <td>@certificate.CreatedAt</td>
                     <td>@certificate.UpdatedAt</td>
                     <td>
-                        <a href="@Url.Action("Edit", new { id = certificate.CertificateID })">Редактировать</a> ||
-                        <a href="@Url.Action("Delete", new { id = certificate.CertificateID })">Удалить</a>
+                        <a asp-controller="MedicalCertificate" asp-action="Edit" asp-route-id = "@certificate.CertificateID">Редактировать</a> ||
+                        <a asp-controller="MedicalCertificate" asp-action="Delete" asp-route-id = "@certificate.CertificateID">Удалить</a>
                     </td>
                 </tr>
             }

@@ -4,21 +4,21 @@ namespace StudentMedicalCertificateSystem.Interfaces
 {
     public interface IMedicalCertificateRepository
     {
-        Task<List<MedicalCertificates>> GetAll();
-        Task<List<MedicalCertificates>> GetAllSortedAndIncludedAsync();
-        Task<MedicalCertificates> GetByIdAsync(int id);
-        Task<MedicalCertificates> GetIncludedByIdAsync(int id);
-        Task<MedicalCertificates> GetIncludedStudentByIdAsync(int id);
-        Task<List<MedicalCertificates>> GetSortedAndIncludedFromList(List<MedicalCertificates> list);
-        Task<List<MedicalCertificates>> GetAllByStudentId(int studentId);
-        Task<List<MedicalCertificates>> GetAllByFullName(string lastName, string firstName, string patronymic);
-        Task<List<MedicalCertificates>> GetAllByLastAndFirstNames(string lastName, string firstName);
-        Task<List<MedicalCertificates>> GetAllByLastName(string lastName);
-        Task<List<MedicalCertificates>> GetAllByTimePeriod(DateTime startOfPeriod, DateTime endOfPeriod);
-        bool Add(MedicalCertificates certificate);
-        bool Update(MedicalCertificates certificate);
-        Task UpdateByAnotherCertificateValues(MedicalCertificates certificateToUpdate, MedicalCertificates updatedCertificate);
-        bool Delete(MedicalCertificates certificate);
+        Task<List<MedicalCertificate>> GetAll();
+        Task<List<MedicalCertificate>> GetAllSortedAndIncludedAsync();
+        Task<MedicalCertificate> GetByIdAsync(int id);
+        Task<MedicalCertificate> GetIncludedByIdAsync(int id);
+        Task<MedicalCertificate> GetIncludedStudentByIdAsync(int id);
+        Task<List<MedicalCertificate>> GetSortedAndIncludedFromList(List<MedicalCertificate> list);
+        Task<List<MedicalCertificate>> GetAllByStudentId(int studentId);
+        Task<List<MedicalCertificate>> GetAllByFullName(string lastName, string firstName, string patronymic);
+        Task<List<MedicalCertificate>> GetAllByLastAndFirstNames(string lastName, string firstName);
+        Task<List<MedicalCertificate>> GetAllByLastName(string lastName);
+        Task<List<MedicalCertificate>> GetAllByTimePeriod(DateTime startOfPeriod, DateTime endOfPeriod);
+        bool Add(MedicalCertificate certificate);
+        bool Update(MedicalCertificate certificate);
+        Task UpdateByAnotherCertificateValues(MedicalCertificate certificateToUpdate, MedicalCertificate updatedCertificate);
+        bool Delete(MedicalCertificate certificate);
         bool Save();
     }
 }

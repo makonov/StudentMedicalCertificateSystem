@@ -1,4 +1,4 @@
-﻿@model StudentMedicalCertificateSystem.Models.MedicalCertificates
+﻿@model StudentMedicalCertificateSystem.Models.MedicalCertificate
 
 <h2>Создание новой заявки</h2>
 
@@ -6,15 +6,7 @@
     @Html.AntiForgeryToken()
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    @await Html.PartialAsync("_StudentInputPartial", new StudentMedicalCertificateSystem.Models.Students())
-    
-    <div class="form-group">
-        <label asp-for="UserID" class="control-label">Выберите ответственного работника</label>
-        <select asp-for="UserID" asp-items="@ViewBag.StaffList" class="form-control">
-            <option value="">Выберите ответственного работника</option>
-        </select>
-        <span asp-validation-for="UserID" class="text-danger"></span>
-    </div>
+    @await Html.PartialAsync("_StudentInputPartial", new StudentMedicalCertificateSystem.Models.Student())
 
     <div class="form-group">
         <label asp-for="ClinicID" class="control-label">Выберите клинику</label>

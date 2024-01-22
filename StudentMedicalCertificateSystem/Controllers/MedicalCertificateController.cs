@@ -8,10 +8,12 @@ using Microsoft.AspNetCore.Http;
 using StudentMedicalCertificateSystem.Interfaces;
 using System.Collections;
 using StudentMedicalCertificateSystem.Repository;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StudentMedicalCertificateSystem.Controllers
 {
-    public class MedicalCertificatesController : Controller
+    
+    public class MedicalCertificateController : Controller
     {
         private readonly IMedicalCertificateRepository _certificateRepository;
         private readonly IDiagnosisRepository _diagnosisRepository;
@@ -20,7 +22,7 @@ namespace StudentMedicalCertificateSystem.Controllers
         private readonly IStudentRepository _studentRepository;
         private readonly IPhotoService _photoService;
 
-        public MedicalCertificatesController(IMedicalCertificateRepository certificateRepository, 
+        public MedicalCertificateController(IMedicalCertificateRepository certificateRepository, 
             IDiagnosisRepository diagnosisRepository, 
             IUserRepository userRepository,
             IClinicRepository clinicRepository,
@@ -35,12 +37,14 @@ namespace StudentMedicalCertificateSystem.Controllers
             _photoService = photoService;
         }
 
+        [Authorize(Roles = "admin, user")]
         public async Task<IActionResult> Index()
         {
             var certificates = await _certificateRepository.GetAllSortedAndIncludedAsync();
             return View(certificates);
         }
 
+        [Authorize(Roles = "admin, user")]
         public async Task<IActionResult> Create()
         {
             await MakeLists();
@@ -75,9 +79,10 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(MedicalCertificates certificate, Students student, IFormFile file)
+        [Authorize(Roles = "admin, user")]
+        public async Task<IActionResult> Create(MedicalCertificate certificate, Student student, IFormFile file)
         {
-            Students foundStudent = await _studentRepository.GetDefaultByFullName(student.LastName, student.FirstName, student.Patronymic);
+            Student foundStudent = await _studentRepository.GetDefaultByFullName(student.LastName, student.FirstName, student.Patronymic);
 
             if (foundStudent != null)
             {
@@ -136,7 +141,7 @@ namespace StudentMedicalCertificateSystem.Controllers
             }
         }
 
-
+        [Authorize(Roles = "admin, user")]
         public async Task<IActionResult> Edit(int id)
         {
             var certificate = await _certificateRepository.GetIncludedStudentByIdAsync(id);
@@ -152,7 +157,8 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, MedicalCertificates certificate, IFormFile file)
+        [Authorize(Roles = "admin, user")]
+        public async Task<IActionResult> Edit(int id, MedicalCertificate certificate, IFormFile file)
         {
             if (id != certificate.CertificateID)
             {
@@ -199,18 +205,18 @@ namespace StudentMedicalCertificateSystem.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Filter(Students student, DateTime startOfIlness, DateTime endOfIlness)
+        public async Task<IActionResult> Filter(Student student, DateTime startOfIlness, DateTime endOfIlness)
         {
-            ModelState.Remove(nameof(Students.LastName));
-            ModelState.Remove(nameof(Students.FirstName));
-            ModelState.Remove(nameof(Students.Patronymic));
+            ModelState.Remove(nameof(Student.LastName));
+            ModelState.Remove(nameof(Student.FirstName));
+            ModelState.Remove(nameof(Student.Patronymic));
 
             string lastName = student.LastName;
             string firstName = student.FirstName;
             string patronymic = student.Patronymic;
 
-            List<MedicalCertificates> certificates = new List<MedicalCertificates>();
-            List<Students> students = new List<Students>();
+            List<MedicalCertificate> certificates = new List<MedicalCertificate>();
+            List<Student> students = new List<Student>();
 
             if (lastName != null || firstName != null || patronymic != null)
             {
@@ -274,6 +280,7 @@ namespace StudentMedicalCertificateSystem.Controllers
             return View("Index", await _certificateRepository.GetSortedAndIncludedFromList(certificates));
         }
 
+        [Authorize(Roles = "admin, user")]
         public async Task<IActionResult> Delete(int id)
         {
             if (id == null)
@@ -293,6 +300,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin, user")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var certificate = await _certificateRepository.GetByIdAsync(id);

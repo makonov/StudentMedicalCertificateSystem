@@ -14,29 +14,29 @@ namespace StudentMedicalCertificateSystem.Repository
             _context = context;
         }
 
-        public bool Add(Students student)
+        public bool Add(Student student)
         {
             _context.Add(student);
             return Save();
         }
 
-        public bool Delete(Students student)
+        public bool Delete(Student student)
         {
             _context.Remove(student);
             return Save();
         }
 
-        public async Task<List<Students>> GetAll()
+        public async Task<List<Student>> GetAll()
         {
             return await _context.Students.ToListAsync();
         }
 
-        public async Task<Students> GetDefaultByFullName(string lastName, string firstName, string patronymic)
+        public async Task<Student> GetDefaultByFullName(string lastName, string firstName, string patronymic)
         {
             return await _context.Students.SingleOrDefaultAsync(s => s.LastName == lastName && s.FirstName == firstName && s.Patronymic == patronymic);
         }
 
-        public async Task<Students> GetByIdAsync(int id)
+        public async Task<Student> GetByIdAsync(int id)
         {
             return await _context.Students.FirstOrDefaultAsync(s => s.StudentID == id);
         }
@@ -47,49 +47,49 @@ namespace StudentMedicalCertificateSystem.Repository
             return saved > 0 ? true : false;
         }
 
-        public bool Update(Students student)
+        public bool Update(Student student)
         {
             _context.Update(student);
             return Save();
         }
 
-        public async Task<List<Students>> GetAllByFullName(string lastName, string firstName, string patronymic)
+        public async Task<List<Student>> GetAllByFullName(string lastName, string firstName, string patronymic)
         {
             return await _context.Students.Select(s => s)
                     .Where(s => s.LastName == lastName && s.FirstName == firstName && s.Patronymic == patronymic).ToListAsync();
         }
 
-        public async Task<List<Students>> GetAllByLastAndFirstNames(string lastName, string firstName)
+        public async Task<List<Student>> GetAllByLastAndFirstNames(string lastName, string firstName)
         {
             return await _context.Students.Select(s => s)
                     .Where(s => s.LastName == lastName && s.FirstName == firstName).ToListAsync();
         }
 
-        public async Task<List<Students>> GetAllByLastNameAndPatronymic(string lastName, string patronymic)
+        public async Task<List<Student>> GetAllByLastNameAndPatronymic(string lastName, string patronymic)
         {
             return await _context.Students.Select(s => s)
                     .Where(s => s.LastName == lastName && s.Patronymic == patronymic).ToListAsync();
         }
 
-        public async Task<List<Students>> GetAllByLastName(string lastName)
+        public async Task<List<Student>> GetAllByLastName(string lastName)
         {
             return await _context.Students.Select(s => s)
                     .Where(s => s.LastName == lastName).ToListAsync();
         }
 
-        public async Task<List<Students>> GetAllByFirstNameAndPatronymic(string firstName, string patronymic)
+        public async Task<List<Student>> GetAllByFirstNameAndPatronymic(string firstName, string patronymic)
         {
             return await _context.Students.Select(s => s)
                     .Where(s => s.FirstName == firstName && s.Patronymic == patronymic).ToListAsync();
         }
 
-        public async Task<List<Students>> GetAllByPatronymic(string patronymic)
+        public async Task<List<Student>> GetAllByPatronymic(string patronymic)
         {
             return await _context.Students.Select(s => s)
                     .Where(s => s.Patronymic == patronymic).ToListAsync();
         }
 
-        public async Task<List<Students>> GetAllByFirstName(string firstName)
+        public async Task<List<Student>> GetAllByFirstName(string firstName)
         {
             return await _context.Students.Select(s => s)
                     .Where(s => s.FirstName == firstName).ToListAsync();

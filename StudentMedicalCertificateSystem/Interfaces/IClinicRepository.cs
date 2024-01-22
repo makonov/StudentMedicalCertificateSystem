@@ -5,12 +5,12 @@ namespace StudentMedicalCertificateSystem.Interfaces
 {
     public interface IClinicRepository
     {
-        Task<List<Clinics>> GetAll();
+        Task<List<Clinic>> GetAll();
         Task<List<SelectListItem>> GetClinicsAsSelectList();
-        Task<Clinics> GetByIdAsync(int id);
-        bool Add(Clinics clinic);
-        bool Update(Clinics clinic);
-        bool Delete(Clinics clinic);
+        Task<Clinic> GetByIdAsync(int id);
+        bool Add(Clinic clinic);
+        bool Update(Clinic clinic);
+        bool Delete(Clinic clinic);
         bool Save();
     }
 }
