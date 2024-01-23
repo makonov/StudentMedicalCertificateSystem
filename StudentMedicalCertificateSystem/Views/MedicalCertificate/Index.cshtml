@@ -4,7 +4,7 @@
     ViewData["Title"] = "Заявки";
 }
 
-<a href="@Url.Action("Create")">Создать новую заявку</a>
+<a class="btn btn-sm btn-primary" href="@Url.Action("Create")">Создать новую заявку</a>
 <br />
 
 @await Html.PartialAsync("_FilterPartial", new StudentMedicalCertificateSystem.Models.Student())

@@ -1,61 +1,68 @@
 ﻿@model StudentMedicalCertificateSystem.Models.Student
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<span asp-validation-for="LastName" class="text-danger"></span>
+<span asp-validation-for="FirstName" class="text-danger"></span>
+<span asp-validation-for="Patronymic" class="text-danger"></span>
+
+<br />
 <details>
     <summary>Сортировка</summary>
-    @using (Html.BeginForm("Filter", "MedicalCertificates", FormMethod.Post))
-    {
-        <br />
-        <div class="form-outline w-50 input-group">
-            <label class="control-label" style="margin-top: 0.5%">Период с</label>
-            <input type="date" name="startOfIlness" class="form-control" style="margin-left:5%" />
+    <div class="sorting-form">
+        @using (Html.BeginForm("Filter", "MedicalCertificate", FormMethod.Post))
+        {
+            <p>Выберите период и/или введите ФИО</p>
+            <div class="form-group date-range">
+                <label class="control-label" style="margin-right: 10px;">Период с</label>
+                <input type="date" name="startOfIlness" class="form-control" />
 
-            <label class="control-label" style="margin-left:5%; margin-top: 0.5%">по</label>
-            <input type="date" name="endOfIlness" class="form-control" style="margin-left:5%" />
-        </div>
-        <br />
-        <form asp-action="Filter" method="post" enctype="multipart/form-data">
-
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <div class="form-group w-25 form-group-horizontal">
-                <label asp-for="LastName" class="control-label">Фамилия</label>
-                <input asp-for="LastName" placeholder="Не выбрано" class="form-control" />
-                <span asp-validation-for="LastName" class="text-danger"></span>
-            </div>
-            <br />
-            <div class="form-group w-25 form-group-horizontal">
-                <label asp-for="FirstName" class="control-label" style="margin-right: 18%">Имя</label>
-                <input asp-for="FirstName" placeholder="Не выбрано" class="form-control" />
-                <span asp-validation-for="FirstName" class="text-danger"></span>
-            </div>
-            <br />
-            <div class="form-group w-25 form-group-horizontal">
-                <label asp-for="Patronymic" class="control-label">Отчество</label>
-                <input asp-for="Patronymic" placeholder="Не выбрано" class="form-control" />
-                <span asp-validation-for="Patronymic" class="text-danger"></span>
+                <label class="control-label" style="margin-right: 10px; margin-left: 10px;">по</label>
+                <input type="date" name="endOfIlness" class="form-control" />
             </div>
 
-            <br />
+            <form asp-action="Filter" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label asp-for="LastName" class="control-label">Фамилия</label>
+                    <input asp-for="LastName" placeholder="Не выбрано" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="FirstName" class="control-label">Имя</label>
+                    <input asp-for="FirstName" placeholder="Не выбрано" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="Patronymic" class="control-label">Отчество</label>
+                    <input asp-for="Patronymic" placeholder="Не выбрано" class="form-control" />
+                </div>
 
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Поиск</button>
-            </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Поиск</button>
+                </div>
+            </form>
 
-        </form>
-
-        <input type="hidden" asp-for="OfficeID" />
-    }
+            <input type="hidden" asp-for="OfficeID" />
+        }
+    </div>
 </details>
 
 <br />
 
 <style>
-    .form-group-horizontal {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
+    .sorting-form {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-top: 10px;
     }
 
-    .form-group-horizontal .control-label {
-        margin-right: 7%;
+    .form-group {
+        margin-bottom: 10px;
+    }
+
+    .date-range {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        margin-right: 10px;
     }
 </style>
+

@@ -23,6 +23,8 @@ namespace StudentMedicalCertificateSystem.Data
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
                 if (!await roleManager.RoleExistsAsync(UserRoles.Guest))
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Guest));
+                if (!await roleManager.RoleExistsAsync(UserRoles.User))
+                    await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
 
                 // Users
                 string adminUserEmail = "teddysmithdeveloper@gmail.com";
@@ -63,6 +65,26 @@ namespace StudentMedicalCertificateSystem.Data
 
                     await userManager.CreateAsync(newAppUser, "Coding@1234?");
                     await userManager.AddToRoleAsync(newAppUser, UserRoles.Guest);
+                }
+
+                string appUserEmail = "user@example.com";
+                var appuser = await userManager.FindByEmailAsync(appUserEmail);
+
+                if (appuser == null)
+                {
+                    var newAppUser = new User()
+                    {
+                        UserName = "user",
+                        Email = appUserEmail,
+                        EmailConfirmed = true,
+                        OfficeID = 1,
+                        FirstName = "TEST",
+                        LastName = "TEST",
+                        Patronymic = "TEST"
+                    };
+
+                    await userManager.CreateAsync(newAppUser, "Coding@1234?");
+                    await userManager.AddToRoleAsync(newAppUser, UserRoles.User);
                 }
             }
         }

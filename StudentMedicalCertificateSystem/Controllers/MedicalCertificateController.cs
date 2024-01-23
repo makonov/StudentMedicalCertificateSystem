@@ -252,8 +252,6 @@ namespace StudentMedicalCertificateSystem.Controllers
                 if (students.Count() == 0)
                 {
                     ModelState.AddModelError("LastName", "Студент не найден");
-                    ModelState.AddModelError("FirstName", "Студент не найден");
-                    ModelState.AddModelError("Patronymic", "Студент не найден");
                     return View("Index", await _certificateRepository.GetAllSortedAndIncludedAsync());
                 }
 

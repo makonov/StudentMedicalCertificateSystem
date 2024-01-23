@@ -73,6 +73,10 @@ namespace StudentMedicalCertificateSystem
                 name: "medicalCertificates",
                 pattern: "{controller=MedicalCertificate}/{action=Index}/{id?}");
 
+            app.MapControllerRoute(
+                name: "users",
+                pattern: "{controller=User}/{action=Index}/{id?}");
+
             app.Run();
         }
     }
