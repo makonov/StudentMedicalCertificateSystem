@@ -36,6 +36,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return await  _context.MedicalCertificates
             .OrderByDescending(x => x.CertificateID)
             .Include(c => c.Student)
+            .Include(c => c.Student.Group)
             .Include(c => c.Clinic)
             .Include(c => c.Diagnosis)
             .ToListAsync();

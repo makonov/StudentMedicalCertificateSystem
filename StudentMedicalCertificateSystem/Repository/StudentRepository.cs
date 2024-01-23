@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using StudentMedicalCertificateSystem.Data;
 using StudentMedicalCertificateSystem.Interfaces;
 using StudentMedicalCertificateSystem.Models;
@@ -93,6 +94,16 @@ namespace StudentMedicalCertificateSystem.Repository
         {
             return await _context.Students.Select(s => s)
                     .Where(s => s.FirstName == firstName).ToListAsync();
+        }
+
+        public async Task<List<Student>> GetAllIncludedGroupAsync()
+        {
+            return await _context.Students.Include(s => s.Group).ToListAsync();
+        }
+
+        public async Task<List<SelectListItem>> GetStudentFullNamesWithGroupsAsSelectedList()
+        {
+            return await _context.Students.Include(s => s.Group).Select(s => new SelectListItem { Value = $"{s.LastName} {s.FirstName} {s.Patronymic}", Text = $"{s.LastName} {s.FirstName} {s.Patronymic} - {s.Group.GroupName}" }).ToListAsync();
         }
     }
 }

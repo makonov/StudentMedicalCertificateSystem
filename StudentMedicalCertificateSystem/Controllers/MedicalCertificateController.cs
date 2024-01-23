@@ -9,6 +9,7 @@ using StudentMedicalCertificateSystem.Interfaces;
 using System.Collections;
 using StudentMedicalCertificateSystem.Repository;
 using Microsoft.AspNetCore.Authorization;
+using StudentMedicalCertificateSystem.ViewModels;
 
 namespace StudentMedicalCertificateSystem.Controllers
 {
@@ -48,15 +49,27 @@ namespace StudentMedicalCertificateSystem.Controllers
         public async Task<IActionResult> Create()
         {
             await MakeLists();
-            return View();
+            var students = await _studentRepository.GetAllIncludedGroupAsync();
+            
+            var studentFullNamesWithGroups = new List<(string, string)>();
+            foreach (var student in students)
+            {
+                string fullName = $"{student.LastName} {student.FirstName} {student.Patronymic}";
+                studentFullNamesWithGroups.Add((fullName, student.Group.GroupName));
+            }
+            var medicalCertificateViewModel = new CreateMedicalCertificateViewModel
+            {
+                AllStudentFullNamesWithGroups = studentFullNamesWithGroups
+            };
+
+            return View(medicalCertificateViewModel);
         }
         
         private async Task MakeLists()
         {
-            
-            ViewBag.StaffList = new SelectList(await GetStaff(), "Value", "Text");
             ViewBag.DiagnosisList = new SelectList(await GetDiagnoses(), "Value", "Text");
             ViewBag.ClinicList = new SelectList(await GetClinics(), "Value", "Text");
+            ViewBag.StudentList = new SelectList(await GetStudentFullNamesWithGroups(), "Value", "Text");
         }
 
         private async Task<List<SelectListItem>> GetDiagnoses()
@@ -65,79 +78,100 @@ namespace StudentMedicalCertificateSystem.Controllers
             return await _diagnosisRepository.GetDiagnosesAsSelectList();
         }
 
-        private async Task<List<SelectListItem>> GetStaff()
-        {
-            // Здесь получаем список работников из базы данных
-            return await _userRepository.GetUsersAsSelectList();
-        }
-
         private async Task<List<SelectListItem>> GetClinics()
         {
             // Здесь получаем список работников из базы данных
             return await _clinicRepository.GetClinicsAsSelectList();
         }
 
+        private async Task<List<SelectListItem>> GetStudentFullNamesWithGroups()
+        {
+            // Здесь получаем список работников из базы данных
+            //var students = await _studentRepository.GetAllIncludedGroupAsync();
+
+            //var studentFullNamesWithGroups = new List<(string, string)>();
+            //foreach (var student in students)
+            //{
+            //    string fullName = $"{student.LastName} {student.FirstName} {student.Patronymic}";
+            //    studentFullNamesWithGroups.Add((fullName, student.Group.GroupName));
+            //}
+            return await _studentRepository.GetStudentFullNamesWithGroupsAsSelectedList();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "admin, user")]
-        public async Task<IActionResult> Create(MedicalCertificate certificate, Student student, IFormFile file)
+        public async Task<IActionResult> Create(CreateMedicalCertificateViewModel certificateViewModel, IFormFile file)
         {
-            Student foundStudent = await _studentRepository.GetDefaultByFullName(student.LastName, student.FirstName, student.Patronymic);
+            // Проверка, выбран ли студент
+            if (certificateViewModel.FullName == null)
+            {
+                ModelState.AddModelError("FullName", "Выберите студента");
+                await MakeLists();
+                return View(certificateViewModel);
+            }
 
+            // Поиск выбранного студента
+            string[] fullName = certificateViewModel.FullName.Split();
+            string lastName = fullName[0];
+            string firstName = fullName[1];
+            string patronymic = fullName[2];
+            Student foundStudent = await _studentRepository.GetDefaultByFullName(lastName, firstName, patronymic);
+
+            // Если студент найден
             if (foundStudent != null)
             {
-                certificate.StudentID = foundStudent.StudentID;
-
-                // Обязательная загрузка файла
-                if (file == null || file.Length == 0)
-                {
-                    ModelState.AddModelError("CertificatePath", "Выберите справку для загрузки.");
-                    await MakeLists();
-                    return View(certificate);
-                }
+                certificateViewModel.StudentID = foundStudent.StudentID;
 
                 var uploadResult = await _photoService.UploadPhotoAsync(file, "Certificates");
 
-                if (!uploadResult.IsExtensionValid)
+                if (!uploadResult.IsUploadedAndExtensionValid)
                 {
-                    ModelState.AddModelError("CertificatePath", "Выберите файл в формате jpg, jpeg или png.");
+                    ModelState.AddModelError("CertificatePath", "Выберите файл в формате jpg, jpeg, png или pdf.");
                     await MakeLists();
-                    return View(certificate);
+                    return View(certificateViewModel);
                 }
 
-                certificate.CertificatePath = "/Certificates/" + uploadResult.FileName;
+                certificateViewModel.CertificatePath = "/Certificates/" + uploadResult.FileName;
 
-                if (certificate.IlnessDate == DateTime.Parse("01.01.0001"))
-                {
-                    ModelState.AddModelError("IlnessDate", "Необходимо выбрать дату!");
-                    await MakeLists();
-                    return View(certificate);
-                }
-
-                if (certificate.RecoveryDate == DateTime.Parse("01.01.0001"))
+                if (certificateViewModel.IlnessDate == DateTime.MinValue)
                 {
                     ModelState.AddModelError("IlnessDate", "Необходимо выбрать дату!");
                     await MakeLists();
-                    return View(certificate);
+                    return View(certificateViewModel);
                 }
+
+                if (certificateViewModel.RecoveryDate == DateTime.MinValue)
+                {
+                    ModelState.AddModelError("RecoveryDate", "Необходимо выбрать дату!");
+                    await MakeLists();
+                    return View(certificateViewModel);
+                }
+
+                var certificate = new MedicalCertificate
+                {
+                    StudentID = certificateViewModel.StudentID,
+                    ClinicID = certificateViewModel.ClinicID,
+                    DiagnosisID = certificateViewModel.DiagnosisID,
+                    CertificatePath = certificateViewModel.CertificatePath,
+                    IlnessDate = certificateViewModel.IlnessDate.HasValue ? certificateViewModel.IlnessDate.Value : default(DateTime),
+                    RecoveryDate = certificateViewModel.RecoveryDate.HasValue ? certificateViewModel.RecoveryDate.Value : default(DateTime),
+                    Answer = certificateViewModel.Answer,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
 
                 // Остальная логика сохранения MedicalCertificates
-                certificate.CreatedAt = DateTime.Now;
-                certificate.UpdatedAt = DateTime.Now;
                 _certificateRepository.Add(certificate);
                 _certificateRepository.Save();
 
-                var updatedCertificates = await _certificateRepository.GetAllSortedAndIncludedAsync();
-
-                return View("Index", updatedCertificates);
+                return RedirectToAction("Index");
             }
             else
             {
-                ModelState.AddModelError("FirstName", "Пользователь не найден.");
-                ModelState.AddModelError("LastName", "Пользователь не найден.");
-                ModelState.AddModelError("Patronymic", "Пользователь не найден.");
+                ModelState.AddModelError("FullName", "Пользователь не найден.");
                 await MakeLists();
-                return View(certificate);
+                return View(certificateViewModel);
             }
         }
 

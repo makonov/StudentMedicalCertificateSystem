@@ -15,7 +15,7 @@ namespace StudentMedicalCertificateSystem.Repository
         }
 
         // Проверка, разрешено ли расширение файла
-        public bool IsFileExtensionAllowed(IFormFile file, string[] allowedExtensions)
+        public bool IsFileUploadedAndExtensionAllowed(IFormFile file, string[] allowedExtensions)
         {
             if (file == null || file.Length == 0)
             {
@@ -26,16 +26,10 @@ namespace StudentMedicalCertificateSystem.Repository
             return allowedExtensions.Contains(fileExtension);
         }
 
-        public async Task<(bool IsExtensionValid, string FileName)> UploadPhotoAsync(IFormFile file, string targetFolder)
+        public async Task<(bool IsUploadedAndExtensionValid, string FileName)> UploadPhotoAsync(IFormFile file, string targetFolder)
         {
-            // Проверка на наличие файла
-            if (file == null || file.Length == 0)
-            {
-                return (false, null);
-            }
-
-            // Проверка формата файла
-            if (!IsFileExtensionAllowed(file, allowedExtensions))
+            // Проверка на наличие файла и его формат
+            if (!IsFileUploadedAndExtensionAllowed(file, allowedExtensions))
             {
                 return (false, null);
             }
@@ -56,14 +50,8 @@ namespace StudentMedicalCertificateSystem.Repository
 
         public async Task<(bool IsReplacementSuccess, string NewFileName)> ReplacePhotoAsync(IFormFile file, string targetFolder, string existingFilePath)
         {
-            // Проверка на наличие нового файла
-            if (file == null || file.Length == 0)
-            {
-                return (false, null);
-            }
-
-            // Проверка формата файла
-            if (!IsFileExtensionAllowed(file, allowedExtensions))
+            // Проверка на наличие файла и его формат
+            if (!IsFileUploadedAndExtensionAllowed(file, allowedExtensions))
             {
                 return (false, null);
             }
