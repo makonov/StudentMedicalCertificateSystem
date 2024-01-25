@@ -42,6 +42,7 @@ namespace StudentMedicalCertificateSystem.Controllers
         public async Task<IActionResult> Index()
         {
             var certificates = await _certificateRepository.GetAllSortedAndIncludedAsync();
+            ViewBag.StudentList = new SelectList(await GetStudentFullNamesWithGroups(), "Value", "Text");
             return View(certificates);
         }
 
@@ -86,15 +87,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         private async Task<List<SelectListItem>> GetStudentFullNamesWithGroups()
         {
-            // Здесь получаем список работников из базы данных
-            //var students = await _studentRepository.GetAllIncludedGroupAsync();
-
-            //var studentFullNamesWithGroups = new List<(string, string)>();
-            //foreach (var student in students)
-            //{
-            //    string fullName = $"{student.LastName} {student.FirstName} {student.Patronymic}";
-            //    studentFullNamesWithGroups.Add((fullName, student.Group.GroupName));
-            //}
+            // Здесь получаем список студентов из базы данных
             return await _studentRepository.GetStudentFullNamesWithGroupsAsSelectedList();
         }
 
@@ -178,7 +171,22 @@ namespace StudentMedicalCertificateSystem.Controllers
         [Authorize(Roles = "admin, user")]
         public async Task<IActionResult> Edit(int id)
         {
-            var certificate = await _certificateRepository.GetIncludedStudentByIdAsync(id);
+            var certificate = await _certificateRepository.GetIncludedByIdAsync(id);
+
+            var certificateViewModel = new EditMedicalCertificateViewModel
+            {
+                CertificateID = certificate.CertificateID,
+                StudentID = certificate.StudentID,
+                Student = certificate.Student,
+                ClinicID = certificate.ClinicID,
+                DiagnosisID = certificate.DiagnosisID,
+                CertificatePath = certificate.CertificatePath,
+                IlnessDate = certificate.IlnessDate,
+                RecoveryDate = certificate.RecoveryDate,
+                Answer = certificate.Answer,
+                CreatedAt = certificate.CreatedAt
+            };
+
             await MakeLists();
 
             if (certificate == null)
@@ -186,129 +194,118 @@ namespace StudentMedicalCertificateSystem.Controllers
                 return NotFound();
             }
 
-            return View(certificate);
+            return View(certificateViewModel);
         }
 
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "admin, user")]
-        public async Task<IActionResult> Edit(int id, MedicalCertificate certificate, IFormFile file)
+        public async Task<IActionResult> Edit(int id, EditMedicalCertificateViewModel certificateViewModel, IFormFile file)
         {
-            if (id != certificate.CertificateID)
-            {
-                return NotFound();
-            }
+            
 
-
-            var existingCertificate = await _certificateRepository.GetByIdAsync(id);
+            var existingCertificate = await _certificateRepository.GetIncludedByIdAsync(id);
 
             if (existingCertificate == null)
             {
-                return NotFound();
+                ModelState.AddModelError("", "Произошла ошибка при попытке обновить справку");
+                await MakeLists();
+                certificateViewModel.Student = existingCertificate.Student;
+                return View(certificateViewModel);
             }
 
             // Проверка на наличие и формат нового файла
-            if (file != null && file.Length > 0)
+            if (file != null)
             {
                 var replacementResult = await _photoService.ReplacePhotoAsync(file, "Certificates", existingCertificate.CertificatePath);
 
                 if (!replacementResult.IsReplacementSuccess)
                 {
-                    ModelState.AddModelError("CertificatePath", "Выберите файл в формате jpg, jpeg или png.");
+                    ModelState.AddModelError("CertificatePath", "Выберите файл в формате jpg, jpeg, png или pdf");
                     await MakeLists();
-                    certificate = await _certificateRepository.GetIncludedStudentByIdAsync(id);
-                    return View(certificate);
+                    certificateViewModel.Student = existingCertificate.Student;
+                    return View(certificateViewModel);
                 }
 
                 // Присвоение пути к новому файлу в модели
-                certificate.CertificatePath = "/Certificates/" + replacementResult.NewFileName;
+                certificateViewModel.CertificatePath = "/Certificates/" + replacementResult.NewFileName;
             }
             else
             {
-                certificate.CertificatePath = existingCertificate.CertificatePath;
+                certificateViewModel.CertificatePath = existingCertificate.CertificatePath;
             }
 
-            certificate.CreatedAt = existingCertificate.CreatedAt;
-            certificate.UpdatedAt = DateTime.Now;
+            if (certificateViewModel.IlnessDate == DateTime.MinValue)
+            {
+                ModelState.AddModelError("IlnessDate", "Необходимо выбрать дату!");
+                await MakeLists();
+                certificateViewModel.Student = existingCertificate.Student;
+                return View(certificateViewModel);
+            }
+
+            if (certificateViewModel.RecoveryDate == DateTime.MinValue)
+            {
+                ModelState.AddModelError("RecoveryDate", "Необходимо выбрать дату!");
+                await MakeLists();
+                certificateViewModel.Student = existingCertificate.Student;
+                return View(certificateViewModel);
+            }
+
+            var certificate = new MedicalCertificate
+            {
+                CertificateID = certificateViewModel.CertificateID,
+                StudentID = certificateViewModel.StudentID,
+                ClinicID = certificateViewModel.ClinicID,
+                DiagnosisID = certificateViewModel.DiagnosisID,
+                CertificatePath = certificateViewModel.CertificatePath,
+                IlnessDate = certificateViewModel.IlnessDate.HasValue ? certificateViewModel.IlnessDate.Value : default(DateTime),
+                RecoveryDate = certificateViewModel.RecoveryDate.HasValue ? certificateViewModel.RecoveryDate.Value : default(DateTime),
+                Answer = certificateViewModel.Answer,
+                CreatedAt = existingCertificate.CreatedAt,
+                UpdatedAt = DateTime.Now
+
+            };
+
             await _certificateRepository.UpdateByAnotherCertificateValues(existingCertificate, certificate);
             _certificateRepository.Save();
-
-            var updatedCertificates = await _certificateRepository.GetAllSortedAndIncludedAsync();
-            return View("Index", updatedCertificates);
+            certificateViewModel.Student = existingCertificate.Student;
+            return RedirectToAction("Index");   
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> Filter(Student student, DateTime startOfIlness, DateTime endOfIlness)
+        public async Task<IActionResult> Filter(FilterCertificatesViewModel filterViewModel)
         {
-            ModelState.Remove(nameof(Student.LastName));
-            ModelState.Remove(nameof(Student.FirstName));
-            ModelState.Remove(nameof(Student.Patronymic));
+            ModelState.Remove(nameof(filterViewModel.FullName));
+            var certificates = new List<MedicalCertificate>();          
 
-            string lastName = student.LastName;
-            string firstName = student.FirstName;
-            string patronymic = student.Patronymic;
-
-            List<MedicalCertificate> certificates = new List<MedicalCertificate>();
-            List<Student> students = new List<Student>();
-
-            if (lastName != null || firstName != null || patronymic != null)
+            if (filterViewModel.FullName != null)
             {
-                if (lastName != null && firstName != null && patronymic != null)
-                {
-                    students = await _studentRepository.GetAllByFullName(lastName, firstName, patronymic);
-                }
-                else if (lastName != null && firstName != null && patronymic == null)
-                {
-                    students = await _studentRepository.GetAllByLastAndFirstNames(lastName, firstName);
-                }
-                else if (lastName != null && firstName == null && patronymic != null)
-                {
-                    students = await _studentRepository.GetAllByLastNameAndPatronymic(lastName, patronymic);
-                }
-                else if (lastName != null && firstName == null && patronymic == null)
-                {
-                    students = await _studentRepository.GetAllByLastName(lastName);
-                }
-                else if (lastName == null && firstName != null && patronymic != null)
-                {
-                    students = await _studentRepository.GetAllByFirstNameAndPatronymic(firstName, patronymic);
-                }
-                else if (lastName == null && firstName == null && patronymic != null)
-                {
-                    students = await _studentRepository.GetAllByPatronymic(patronymic);
-                }
-                else if (lastName == null && firstName != null && patronymic == null)
-                {
-                    students = await _studentRepository.GetAllByFirstName(firstName);
-                }
-
-                if (students.Count() == 0)
-                {
-                    ModelState.AddModelError("LastName", "Студент не найден");
-                    return View("Index", await _certificateRepository.GetAllSortedAndIncludedAsync());
-                }
-
-                foreach (var s in students)
-                {
-                    var foundCertificates = await _certificateRepository.GetAllByStudentId(s.StudentID);
-                    certificates = certificates.Union(foundCertificates).ToList();
-                }
-
-                
+                // Поиск выбранного студента
+                string[] fullName = filterViewModel.FullName.Split();
+                string lastName = fullName[0];
+                string firstName = fullName[1];
+                string patronymic = fullName[2];
+                Student foundStudent = await _studentRepository.GetDefaultByFullName(lastName, firstName, patronymic);
+                certificates = await _certificateRepository.GetAllSortedAndIncludedByStudentIdAsync(foundStudent.StudentID);
             }
 
-            bool isValid = DateTime.Parse("01.01.0001") != startOfIlness && DateTime.Parse("01.01.0001") != endOfIlness;
+            var ilnessDate = filterViewModel.IlnessDate.HasValue ? filterViewModel.IlnessDate.Value : default(DateTime);
+            var recoveryDate = filterViewModel.RecoveryDate.HasValue ? filterViewModel.RecoveryDate.Value : default(DateTime);
+            bool isValid = ilnessDate != DateTime.MinValue && recoveryDate != DateTime.MinValue;
 
             if (isValid && certificates.Count() != 0)
             {
-                certificates = certificates.Select(c => c).Where(c => c.IlnessDate >= startOfIlness && c.RecoveryDate <= endOfIlness).ToList();
+                certificates = certificates.Select(c => c)
+                    .Where(c => c.IlnessDate >= filterViewModel.IlnessDate
+                    && c.RecoveryDate <= filterViewModel.RecoveryDate).ToList();
             }
             else if (isValid && certificates.Count == 0)
             {
-                certificates = await _certificateRepository.GetAllByTimePeriod(startOfIlness, endOfIlness);
+                certificates = await _certificateRepository.GetAllByTimePeriod(ilnessDate, recoveryDate);
             }
 
+            ViewBag.StudentList = new SelectList(await GetStudentFullNamesWithGroups(), "Value", "Text");
             return View("Index", await _certificateRepository.GetSortedAndIncludedFromList(certificates));
         }
 
@@ -351,6 +348,7 @@ namespace StudentMedicalCertificateSystem.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "admin, user, guest")]
         public IActionResult ImageView(string imagePath)
         {
             return View("ImageView", imagePath);

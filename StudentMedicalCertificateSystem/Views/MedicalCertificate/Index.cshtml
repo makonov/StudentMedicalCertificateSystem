@@ -7,57 +7,58 @@
 <a class="btn btn-sm btn-primary" href="@Url.Action("Create")">Создать новую заявку</a>
 <br />
 
-@await Html.PartialAsync("_FilterPartial", new StudentMedicalCertificateSystem.Models.Student())
+@await Html.PartialAsync("_FilterPartial", new StudentMedicalCertificateSystem.ViewModels.FilterCertificatesViewModel())
 @if (Model.Count() != 0)
 {
-    <table>
-        <thead>
-            <tr>
-                <th>Номер заявки</th>
-                <th>Студент</th>
-                <th>Группа</th>
-                <th>Клиника</th>
-                <th>Диагноз</th>
-                <th>Справка</th>
-                <th>Дата начала болезни</th>
-                <th>Дата выздоровления</th>
-                <th>Комментарии сотрудника</th>
-                <th>Дата создания</th>
-                <th>Дата последнего обновления</th>
-                <th>Действия</th> 
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var certificate in Model)
-            {
+    <div class="container">
+        <table>
+            <thead>
                 <tr>
-                    <td>@certificate.CertificateID</td>
-                    <td>@certificate.Student.LastName @certificate.Student.FirstName @certificate.Student.Patronymic</td>
-                    <td>@certificate.Student.Group.GroupName</td>
-                    <td>@certificate.Clinic.ClinicName</td>
-                    <td>@certificate.Diagnosis.DiagnosisName</td>
-                    <td>
-                        <a target="_blank" href="@Url.Action("ImageView", "MedicalCertificate", new { imagePath = certificate.CertificatePath })">Посмотреть справку</a>
-                    </td>
-                    <td>@certificate.IlnessDate.ToString("dd.MM.yyyy")</td>
-                    <td>@certificate.RecoveryDate.ToString("dd.MM.yyyy")</td>
-                    <td>@certificate.Answer</td>
-                    <td>@certificate.CreatedAt</td>
-                    <td>@certificate.UpdatedAt</td>
-                    <td>
-                        <a asp-controller="MedicalCertificate" asp-action="Edit" asp-route-id = "@certificate.CertificateID">Редактировать</a> ||
-                        <a asp-controller="MedicalCertificate" asp-action="Delete" asp-route-id = "@certificate.CertificateID">Удалить</a>
-                    </td>
+                    <th>Номер заявки</th>
+                    <th>Студент</th>
+                    <th>Группа</th>
+                    <th>Клиника</th>
+                    <th>Диагноз</th>
+                    <th>Справка</th>
+                    <th>Дата начала болезни</th>
+                    <th>Дата выздоровления</th>
+                    <th>Комментарии сотрудника</th>
+                    <th>Дата создания</th>
+                    <th>Дата последнего обновления</th>
+                    <th>Действия</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var certificate in Model)
+                {
+                    <tr>
+                        <td>@certificate.CertificateID</td>
+                        <td>@certificate.Student.LastName @certificate.Student.FirstName @certificate.Student.Patronymic</td>
+                        <td>@certificate.Student.Group.GroupName</td>
+                        <td>@certificate.Clinic.ClinicName</td>
+                        <td>@certificate.Diagnosis.DiagnosisName</td>
+                        <td>
+                            <a target="_blank" href="@Url.Action("ImageView", "MedicalCertificate", new { imagePath = certificate.CertificatePath })">Посмотреть справку</a>
+                        </td>
+                        <td>@certificate.IlnessDate.ToString("dd.MM.yyyy")</td>
+                        <td>@certificate.RecoveryDate.ToString("dd.MM.yyyy")</td>
+                        <td>@certificate.Answer</td>
+                        <td>@certificate.CreatedAt</td>
+                        <td>@certificate.UpdatedAt</td>
+                        <td>
+                            <a asp-controller="MedicalCertificate" asp-action="Edit" asp-route-id="@certificate.CertificateID">Редактировать</a> ||
+                            <a asp-controller="MedicalCertificate" asp-action="Delete" asp-route-id="@certificate.CertificateID">Удалить</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 else
 {
     <p>Увы, но ничего не найдено</p>
 }
-
 
 <style>
     table {
@@ -78,4 +79,5 @@ else
     td:nth-child(3) {
         white-space: nowrap;
     }
+
 </style>

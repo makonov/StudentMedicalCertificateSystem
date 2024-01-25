@@ -47,21 +47,6 @@ namespace StudentMedicalCertificateSystem.Repository
             return await _context.MedicalCertificates.FirstOrDefaultAsync(c => c.CertificateID == id);
         }
 
-        public async Task<List<MedicalCertificate>> GetAllByFullName(string lastName, string firstName, string patronymic)
-        {
-            return await _context.MedicalCertificates.Include(c => c.Student).Where(c => c.Student.LastName == lastName && c.Student.FirstName == firstName && c.Student.Patronymic == patronymic).ToListAsync();
-        }
-
-        public async Task<List<MedicalCertificate>> GetAllByLastAndFirstNames(string lastName, string firstName)
-        {
-            return await _context.MedicalCertificates.Include(c => c.Student).Where(c => c.Student.LastName == lastName && c.Student.FirstName == firstName).ToListAsync();
-        }
-
-        public async Task<List<MedicalCertificate>> GetAllByLastName(string lastName)
-        {
-            return await _context.MedicalCertificates.Include(c => c.Student).Where(c => c.Student.LastName == lastName).ToListAsync();
-        }
-
         public async Task<List<MedicalCertificate>> GetAllByTimePeriod(DateTime startOfPeriod, DateTime endOfPeriod)
         {
             return await _context.MedicalCertificates.Select(c => c).Where(c => c.IlnessDate >= startOfPeriod && c.RecoveryDate <= endOfPeriod).ToListAsync();
@@ -74,6 +59,18 @@ namespace StudentMedicalCertificateSystem.Repository
             .Include(c => c.Clinic)
             .Include(c => c.Diagnosis)
             .FirstOrDefaultAsync(c => c.CertificateID == id);
+        }
+
+        public async Task<List<MedicalCertificate>> GetAllSortedAndIncludedByStudentIdAsync(int id)
+        {
+            return await _context.MedicalCertificates
+             .OrderByDescending(x => x.CertificateID)
+             .Include(c => c.Student)
+             .Include(c => c.Student.Group)
+             .Include(c => c.Clinic)
+             .Include(c => c.Diagnosis)
+             .Where(c => c.StudentID == id)
+             .ToListAsync();
         }
 
         public async Task<MedicalCertificate> GetIncludedStudentByIdAsync(int id)
@@ -112,6 +109,7 @@ namespace StudentMedicalCertificateSystem.Repository
                 .Where(c => certificateIds.Contains(c.CertificateID))
                 .OrderByDescending(x => x.CertificateID)
                 .Include(c => c.Student)
+                .Include(c => c.Student.Group)
                 .Include(c => c.Clinic)
                 .Include(c => c.Diagnosis)
                 .ToListAsync();

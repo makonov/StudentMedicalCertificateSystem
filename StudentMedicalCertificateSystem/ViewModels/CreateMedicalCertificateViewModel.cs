@@ -6,7 +6,6 @@ namespace StudentMedicalCertificateSystem.ViewModels
 {
     public class CreateMedicalCertificateViewModel
     {
-        public MedicalCertificate MedicalCertificate { get; set; }
         public string FullName { get; set; }
         [Required(ErrorMessage = "ID студента обязателен")]
         public int StudentID { get; set; }

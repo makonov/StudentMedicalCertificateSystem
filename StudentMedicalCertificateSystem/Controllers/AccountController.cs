@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using StudentMedicalCertificateSystem.Data;
 using StudentMedicalCertificateSystem.Models;
@@ -52,6 +53,13 @@ namespace StudentMedicalCertificateSystem.Controllers
             // Пользователь не найден
             TempData["Error"] = "Пользователь с данным логином не найден. Попробуйте еще раз";
             return View(loginViewModel);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
         }
     }
 }

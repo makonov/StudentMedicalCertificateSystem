@@ -28,7 +28,7 @@
 
     <div class="form-group">
         <label asp-for="FullName" class="control-label">Выберите студента</label>
-        <select asp-for="FullName" class="form-control selectpicker" data-live-search="true">
+        <select asp-for="FullName" з class="form-control selectpicker" data-live-search="true">
             <option value="">Выберите студента</option>
             @foreach (var student in ViewBag.StudentList)
             {
@@ -42,9 +42,9 @@
         <label asp-for="ClinicID" class="control-label">Выберите клинику</label>
         <select asp-for="ClinicID" class="form-control selectpicker" data-live-search="true">
             <option value="">Выберите клинику</option>
-            @foreach (var item in ViewBag.ClinicList)
+            @foreach (var clinic in ViewBag.ClinicList)
             {
-                <option value="@item.Value">@item.Text</option>
+                <option value="@clinic.Value">@clinic.Text</option>
             }
         </select>
         <span asp-validation-for="ClinicID" class="text-danger"></span>
@@ -54,9 +54,9 @@
         <label asp-for="DiagnosisID" class="control-label">Выберите диагноз</label>
         <select asp-for="DiagnosisID" class="form-control selectpicker" data-live-search="true">
             <option value="">Выберите диагноз</option>
-            @foreach (var item in ViewBag.DiagnosisList)
+            @foreach (var diagnosis in ViewBag.DiagnosisList)
             {
-                <option value="@item.Value">@item.Text</option>
+                <option value="@diagnosis.Value">@diagnosis.Text</option>
             }
         </select>
         <span asp-validation-for="DiagnosisID" class="text-danger"></span>

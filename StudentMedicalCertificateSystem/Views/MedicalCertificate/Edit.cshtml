@@ -1,4 +1,22 @@
-﻿@model StudentMedicalCertificateSystem.Models.MedicalCertificate
+﻿@model StudentMedicalCertificateSystem.ViewModels.EditMedicalCertificateViewModel
+
+<!-- Подключение Bootstrap CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+<!-- Подключение Bootstrap-select CSS и JS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+
+@section Scripts {
+    <!-- Инициализация Bootstrap-select -->
+    <script>
+        $(document).ready(function () {
+            $('.selectpicker').selectpicker();
+        });
+    </script>
+}
 
 <h2>Редактирование заявки</h2>
 
@@ -13,16 +31,27 @@
 
     <input asp-for="CertificateID" type="hidden" />
     <input asp-for="StudentID" type="hidden" />
+    <input asp-for="CreatedAt" type="hidden" />
 
     <div class="form-group">
         <label asp-for="ClinicID" class="control-label">Выберите клинику</label>
-        <select asp-for="ClinicID" asp-items="@ViewBag.ClinicList" class="form-control"></select>
+        <select asp-for="ClinicID" class="form-control selectpicker" data-live-search="true">
+            @foreach (var clinic in ViewBag.ClinicList)
+            {
+                <option value="@clinic.Value">@clinic.Text</option>
+            }
+        </select>
         <span asp-validation-for="ClinicID" class="text-danger"></span>
     </div>
 
     <div class="form-group">
         <label asp-for="DiagnosisID" class="control-label">Выберите диагноз</label>
-        <select asp-for="DiagnosisID" asp-items="@ViewBag.DiagnosisList" class="form-control"></select>
+        <select asp-for="DiagnosisID" class="form-control selectpicker" data-live-search="true">
+            @foreach (var diagnosis in ViewBag.DiagnosisList)
+            {
+                <option value="@diagnosis.Value">@diagnosis.Text</option>
+            }
+        </select>
         <span asp-validation-for="DiagnosisID" class="text-danger"></span>
     </div>
 

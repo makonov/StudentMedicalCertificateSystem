@@ -54,48 +54,6 @@ namespace StudentMedicalCertificateSystem.Repository
             return Save();
         }
 
-        public async Task<List<Student>> GetAllByFullName(string lastName, string firstName, string patronymic)
-        {
-            return await _context.Students.Select(s => s)
-                    .Where(s => s.LastName == lastName && s.FirstName == firstName && s.Patronymic == patronymic).ToListAsync();
-        }
-
-        public async Task<List<Student>> GetAllByLastAndFirstNames(string lastName, string firstName)
-        {
-            return await _context.Students.Select(s => s)
-                    .Where(s => s.LastName == lastName && s.FirstName == firstName).ToListAsync();
-        }
-
-        public async Task<List<Student>> GetAllByLastNameAndPatronymic(string lastName, string patronymic)
-        {
-            return await _context.Students.Select(s => s)
-                    .Where(s => s.LastName == lastName && s.Patronymic == patronymic).ToListAsync();
-        }
-
-        public async Task<List<Student>> GetAllByLastName(string lastName)
-        {
-            return await _context.Students.Select(s => s)
-                    .Where(s => s.LastName == lastName).ToListAsync();
-        }
-
-        public async Task<List<Student>> GetAllByFirstNameAndPatronymic(string firstName, string patronymic)
-        {
-            return await _context.Students.Select(s => s)
-                    .Where(s => s.FirstName == firstName && s.Patronymic == patronymic).ToListAsync();
-        }
-
-        public async Task<List<Student>> GetAllByPatronymic(string patronymic)
-        {
-            return await _context.Students.Select(s => s)
-                    .Where(s => s.Patronymic == patronymic).ToListAsync();
-        }
-
-        public async Task<List<Student>> GetAllByFirstName(string firstName)
-        {
-            return await _context.Students.Select(s => s)
-                    .Where(s => s.FirstName == firstName).ToListAsync();
-        }
-
         public async Task<List<Student>> GetAllIncludedGroupAsync()
         {
             return await _context.Students.Include(s => s.Group).ToListAsync();
