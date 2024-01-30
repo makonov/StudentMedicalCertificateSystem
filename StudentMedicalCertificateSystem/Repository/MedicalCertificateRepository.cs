@@ -49,7 +49,14 @@ namespace StudentMedicalCertificateSystem.Repository
 
         public async Task<List<MedicalCertificate>> GetAllByTimePeriod(DateTime startOfPeriod, DateTime endOfPeriod)
         {
-            return await _context.MedicalCertificates.Select(c => c).Where(c => c.IlnessDate >= startOfPeriod && c.RecoveryDate <= endOfPeriod).ToListAsync();
+            return await _context.MedicalCertificates
+                .OrderByDescending(c => c.CertificateID)
+                .Include(c => c.Student)
+                .Include(c => c.Student.Group)
+                .Include (c => c.Clinic)
+                .Include(c => c.Diagnosis)
+                .Where(c => c.IlnessDate >= startOfPeriod && c.RecoveryDate <= endOfPeriod)
+                .ToListAsync();
         }
 
         public async Task<MedicalCertificate> GetIncludedByIdAsync(int id)
@@ -98,7 +105,7 @@ namespace StudentMedicalCertificateSystem.Repository
 
         public async Task<List<MedicalCertificate>> GetAllByStudentId(int studentId)
         {
-            return await _context.MedicalCertificates.Select(c => c).Where(c => c.StudentID == studentId).ToListAsync();
+            return await _context.MedicalCertificates.Where(c => c.StudentID == studentId).ToListAsync();
         }
 
         public async Task<List<MedicalCertificate>> GetSortedAndIncludedFromList(List<MedicalCertificate> list)
@@ -114,5 +121,42 @@ namespace StudentMedicalCertificateSystem.Repository
                 .Include(c => c.Diagnosis)
                 .ToListAsync();
         }
+
+        public async Task<int> Count()
+        {
+            return await _context.MedicalCertificates.CountAsync();
+        }
+
+        public async Task<List<MedicalCertificate>> GetPagedCertificates(int page, int pageSize)
+        {
+            return await _context.MedicalCertificates
+            .OrderByDescending(c => c.CertificateID)
+            .Include(c => c.Student)
+            .Include(c => c.Student.Group)
+            .Include(c => c.Clinic)
+            .Include(c => c.Diagnosis)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        }
+
+        public async Task<List<MedicalCertificate>> GetPagedCertificatesFromList(List<MedicalCertificate> certificates, int page, int pageSize)
+        {
+            var certificateIds = certificates.Select(c => c.CertificateID).ToList();
+
+            var pagedCertificates = _context.MedicalCertificates
+                .Where(c => certificateIds.Contains(c.CertificateID))
+                .OrderByDescending(c => c.CertificateID)
+                .Include(c => c.Student)
+                .Include(c => c.Student.Group)
+                .Include(c => c.Clinic)
+                .Include(c => c.Diagnosis)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return pagedCertificates;
+        }
+
     }
 }

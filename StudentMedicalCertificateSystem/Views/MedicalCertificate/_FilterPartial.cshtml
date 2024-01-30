@@ -39,7 +39,7 @@
 
             <div class="form-group">
                 <label asp-for="FullName" class="control-label">Выберите студента</label>
-                <select asp-for="FullName" class="form-control selectpicker" data-live-search="true">
+                <select asp-for="FullName" class="form-control selectpicker" data-live-search="true" data-size="10" data-live-search-scroll="3">
                     <option value="">Выберите студента</option>
                     @foreach (var student in ViewBag.StudentList)
                     {

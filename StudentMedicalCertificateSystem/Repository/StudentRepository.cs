@@ -32,6 +32,16 @@ namespace StudentMedicalCertificateSystem.Repository
             return await _context.Students.ToListAsync();
         }
 
+
+        public async Task<List<Student>> GetAllSortedAndIncludedAsync()
+        {
+            return await _context.Students
+                .OrderByDescending(s => s.StudentID)
+                .Include(s => s.Group)
+                .Include(s => s.Office)
+                .ToListAsync();
+        }
+
         public async Task<Student> GetDefaultByFullName(string lastName, string firstName, string patronymic)
         {
             return await _context.Students.SingleOrDefaultAsync(s => s.LastName == lastName && s.FirstName == firstName && s.Patronymic == patronymic);

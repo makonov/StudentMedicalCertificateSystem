@@ -2,23 +2,26 @@
 
 <a asp-action="Index">Назад ко всем справкам</a>
 
-<!-- Подключение Bootstrap CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-
-<!-- Подключение Bootstrap-select CSS и JS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
-
-@section Scripts {
+@* @section Scripts {
     <!-- Инициализация Bootstrap-select -->
     <script>
         $(document).ready(function () {
             $('.selectpicker').selectpicker();
         });
     </script>
+} *@
+
+@section Scripts {
+    <!-- Подключение Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <!-- Подключение Bootstrap-select CSS и JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
 }
+
 
 <h2>Создание новой заявки</h2>
 
@@ -28,7 +31,7 @@
 
     <div class="form-group">
         <label asp-for="FullName" class="control-label">Выберите студента</label>
-        <select asp-for="FullName" з class="form-control selectpicker" data-live-search="true">
+        <select id="dropdown" asp-for="FullName" class="form-control selectpicker" data-live-search="true" data-size="10" data-live-search-scroll ="3">
             <option value="">Выберите студента</option>
             @foreach (var student in ViewBag.StudentList)
             {
@@ -40,7 +43,7 @@
 
     <div class="form-group">
         <label asp-for="ClinicID" class="control-label">Выберите клинику</label>
-        <select asp-for="ClinicID" class="form-control selectpicker" data-live-search="true">
+        <select id="studentSelect" asp-for="ClinicID" class="form-control selectpicker" data-live-search="true">
             <option value="">Выберите клинику</option>
             @foreach (var clinic in ViewBag.ClinicList)
             {

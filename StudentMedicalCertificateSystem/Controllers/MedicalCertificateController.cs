@@ -22,6 +22,8 @@ namespace StudentMedicalCertificateSystem.Controllers
         private readonly IClinicRepository _clinicRepository;
         private readonly IStudentRepository _studentRepository;
         private readonly IPhotoService _photoService;
+        private const int PageSize = 10;
+        private static List<MedicalCertificate> filtered;
 
         public MedicalCertificateController(IMedicalCertificateRepository certificateRepository, 
             IDiagnosisRepository diagnosisRepository, 
@@ -39,33 +41,47 @@ namespace StudentMedicalCertificateSystem.Controllers
         }
 
         [Authorize(Roles = "admin, user")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            var certificates = await _certificateRepository.GetAllSortedAndIncludedAsync();
+            var totalCount = await _certificateRepository.Count();
+            var totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
+
+            var certificates = await _certificateRepository.GetPagedCertificates(page, PageSize);
             ViewBag.StudentList = new SelectList(await GetStudentFullNamesWithGroups(), "Value", "Text");
-            return View(certificates);
+
+            var viewModel = new ShowMedicalCertificateViewModel
+            {
+                Certificates = certificates,
+                PagingInfo = new PagingInfo
+                {
+                    CurrentPage = page,
+                    ItemsPerPage = PageSize,
+                    TotalItems = totalCount,
+                    TotalPages = totalPages
+                }
+            };
+            return View(viewModel);
         }
 
         [Authorize(Roles = "admin, user")]
         public async Task<IActionResult> Create()
         {
             await MakeLists();
-            var students = await _studentRepository.GetAllIncludedGroupAsync();
-            
-            var studentFullNamesWithGroups = new List<(string, string)>();
-            foreach (var student in students)
-            {
-                string fullName = $"{student.LastName} {student.FirstName} {student.Patronymic}";
-                studentFullNamesWithGroups.Add((fullName, student.Group.GroupName));
-            }
-            var medicalCertificateViewModel = new CreateMedicalCertificateViewModel
-            {
-                AllStudentFullNamesWithGroups = studentFullNamesWithGroups
-            };
+            var medicalCertificateViewModel = new CreateMedicalCertificateViewModel();
 
             return View(medicalCertificateViewModel);
         }
-        
+
+        [HttpGet]
+        public async Task<JsonResult> SearchStudents(string searchTerm)
+        {
+            var students = await _studentRepository.GetAll();
+            students = students.Select(s => s).Where(s => $"{s.LastName} {s.FirstName} {s.Patronymic}".Contains(searchTerm)).ToList();
+            var result = students.Select(s => new { Value = s.StudentID.ToString(), Text = $"{s.LastName} {s.FirstName} {s.Patronymic}" });
+
+            return Json(result);
+        }
+
         private async Task MakeLists()
         {
             ViewBag.DiagnosisList = new SelectList(await GetDiagnoses(), "Value", "Text");
@@ -272,16 +288,59 @@ namespace StudentMedicalCertificateSystem.Controllers
             return RedirectToAction("Index");   
         }
 
-
+        [HttpGet]
         [HttpPost]
-        public async Task<IActionResult> Filter(FilterCertificatesViewModel filterViewModel)
+        public async Task<IActionResult> Filter(FilterCertificatesViewModel filterViewModel, int page = 1)
         {
             ModelState.Remove(nameof(filterViewModel.FullName));
-            var certificates = new List<MedicalCertificate>();          
+            string fullName = TempData["FullName"] as string;
+            DateTime? recoveryDate = TempData["RecoveryDate"] as DateTime?;
+            DateTime? illnessDate = TempData["IllnessDate"] as DateTime?;
+            
+            TempData.Remove("FullName");
+            TempData.Remove("RecoveryDate");
+            TempData.Remove("IllnessDate");
+
+            filterViewModel.FullName = fullName == null ? filterViewModel.FullName : fullName;
+            filterViewModel.IlnessDate = illnessDate == null ? filterViewModel.IlnessDate : illnessDate;
+            filterViewModel.RecoveryDate = recoveryDate == null ? filterViewModel.RecoveryDate : recoveryDate;
+            var certificates = await GetFilteredCertificates(filterViewModel);
+
+            var paginatedCertificates = certificates
+                .Skip((page - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            ViewBag.StudentList = new SelectList(await GetStudentFullNamesWithGroups(), "Value", "Text");
+
+            var viewModel = new ShowMedicalCertificateViewModel
+            {
+                Certificates = paginatedCertificates,
+                FilterViewModel = new FilterCertificatesViewModel
+                {
+                    FullName = filterViewModel.FullName,
+                    RecoveryDate = filterViewModel.RecoveryDate,
+                    IlnessDate = filterViewModel.IlnessDate,
+                },
+                PagingInfo = new PagingInfo
+                {
+                    CurrentPage = page,
+                    ItemsPerPage = PageSize,
+                    TotalItems = certificates.Count,
+                    TotalPages = (int)Math.Ceiling((double)certificates.Count / PageSize)
+                }
+            };
+
+
+            return View("Index", viewModel);
+        }
+
+        private async Task<List<MedicalCertificate>> GetFilteredCertificates(FilterCertificatesViewModel filterViewModel)
+        {
+            List<MedicalCertificate> certificates = new List<MedicalCertificate>();
 
             if (filterViewModel.FullName != null)
             {
-                // Поиск выбранного студента
                 string[] fullName = filterViewModel.FullName.Split();
                 string lastName = fullName[0];
                 string firstName = fullName[1];
@@ -290,8 +349,10 @@ namespace StudentMedicalCertificateSystem.Controllers
                 certificates = await _certificateRepository.GetAllSortedAndIncludedByStudentIdAsync(foundStudent.StudentID);
             }
 
-            var ilnessDate = filterViewModel.IlnessDate.HasValue ? filterViewModel.IlnessDate.Value : default(DateTime);
-            var recoveryDate = filterViewModel.RecoveryDate.HasValue ? filterViewModel.RecoveryDate.Value : default(DateTime);
+            var ilnessDate = filterViewModel.IlnessDate ?? default;
+            var recoveryDate = filterViewModel.RecoveryDate ?? default;
+
+
             bool isValid = ilnessDate != DateTime.MinValue && recoveryDate != DateTime.MinValue;
 
             if (isValid && certificates.Count() != 0)
@@ -305,8 +366,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 certificates = await _certificateRepository.GetAllByTimePeriod(ilnessDate, recoveryDate);
             }
 
-            ViewBag.StudentList = new SelectList(await GetStudentFullNamesWithGroups(), "Value", "Text");
-            return View("Index", await _certificateRepository.GetSortedAndIncludedFromList(certificates));
+            return certificates;
         }
 
         [Authorize(Roles = "admin, user")]

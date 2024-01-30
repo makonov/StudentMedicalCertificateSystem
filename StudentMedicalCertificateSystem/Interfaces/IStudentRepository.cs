@@ -7,6 +7,7 @@ namespace StudentMedicalCertificateSystem.Interfaces
     {
         Task<List<Student>> GetAll();
         Task<List<Student>> GetAllIncludedGroupAsync();
+        Task<List<Student>> GetAllSortedAndIncludedAsync();
         Task<Student> GetByIdAsync(int id);
         Task<List<SelectListItem>> GetStudentFullNamesWithGroupsAsSelectedList();
         Task<Student> GetDefaultByFullName(string lastName, string  firstName, string patronymic);
