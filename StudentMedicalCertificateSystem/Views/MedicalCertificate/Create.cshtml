@@ -2,14 +2,6 @@
 
 <a asp-action="Index">Назад ко всем справкам</a>
 
-@* @section Scripts {
-    <!-- Инициализация Bootstrap-select -->
-    <script>
-        $(document).ready(function () {
-            $('.selectpicker').selectpicker();
-        });
-    </script>
-} *@
 
 @section Scripts {
     <!-- Подключение Bootstrap CSS -->
@@ -22,80 +14,85 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
 }
 
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2>Создание новой заявки</h2>
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-<h2>Создание новой заявки</h2>
+                        <div class="form-group">
+                            <label asp-for="FullName" class="control-label">Выберите студента</label>
+                            <select id="dropdown" asp-for="FullName" class="form-control selectpicker" data-live-search="true" data-size="10" data-live-search-scroll="3">
+                                <option value="">Выберите студента</option>
+                                @foreach (var student in ViewBag.StudentList)
+                                {
+                                    <option value="@student.Value">@student.Text</option>
+                                }
+                            </select>
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
 
-<form asp-action="Create" method="post" enctype="multipart/form-data">
-    @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="form-group">
+                            <label asp-for="ClinicID" class="control-label">Выберите клинику</label>
+                            <select id="studentSelect" asp-for="ClinicID" class="form-control selectpicker" data-live-search="true">
+                                <option value="">Выберите клинику</option>
+                                @foreach (var clinic in ViewBag.ClinicList)
+                                {
+                                    <option value="@clinic.Value">@clinic.Text</option>
+                                }
+                            </select>
+                            <span asp-validation-for="ClinicID" class="text-danger"></span>
+                        </div>
 
-    <div class="form-group">
-        <label asp-for="FullName" class="control-label">Выберите студента</label>
-        <select id="dropdown" asp-for="FullName" class="form-control selectpicker" data-live-search="true" data-size="10" data-live-search-scroll ="3">
-            <option value="">Выберите студента</option>
-            @foreach (var student in ViewBag.StudentList)
-            {
-                <option value="@student.Value">@student.Text</option>
-            }
-        </select>
-        <span asp-validation-for="FullName" class="text-danger"></span>
+                        <div class="form-group">
+                            <label asp-for="DiagnosisID" class="control-label">Выберите диагноз</label>
+                            <select asp-for="DiagnosisID" class="form-control selectpicker" data-live-search="true">
+                                <option value="">Выберите диагноз</option>
+                                @foreach (var diagnosis in ViewBag.DiagnosisList)
+                                {
+                                    <option value="@diagnosis.Value">@diagnosis.Text</option>
+                                }
+                            </select>
+                            <span asp-validation-for="DiagnosisID" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="CertificatePath" class="control-label">Путь к справке</label>
+                            <input asp-for="CertificatePath" name="file" type="file" class="form-control" />
+                            <span asp-validation-for="CertificatePath" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="IlnessDate" class="control-label">Дата начала болезни</label>
+                            <input asp-for="IlnessDate" class="form-control" />
+                            <span asp-validation-for="IlnessDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="RecoveryDate" class="control-label">Дата выздоровления</label>
+                            <input asp-for="RecoveryDate" class="form-control" />
+                            <span asp-validation-for="RecoveryDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Answer" class="control-label">Комментарии работника</label>
+                            <input asp-for="Answer" class="form-control" />
+                            <span asp-validation-for="Answer" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Создать</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div class="form-group">
-        <label asp-for="ClinicID" class="control-label">Выберите клинику</label>
-        <select id="studentSelect" asp-for="ClinicID" class="form-control selectpicker" data-live-search="true">
-            <option value="">Выберите клинику</option>
-            @foreach (var clinic in ViewBag.ClinicList)
-            {
-                <option value="@clinic.Value">@clinic.Text</option>
-            }
-        </select>
-        <span asp-validation-for="ClinicID" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="DiagnosisID" class="control-label">Выберите диагноз</label>
-        <select asp-for="DiagnosisID" class="form-control selectpicker" data-live-search="true">
-            <option value="">Выберите диагноз</option>
-            @foreach (var diagnosis in ViewBag.DiagnosisList)
-            {
-                <option value="@diagnosis.Value">@diagnosis.Text</option>
-            }
-        </select>
-        <span asp-validation-for="DiagnosisID" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="CertificatePath" class="control-label">Путь к справке</label>
-        <input asp-for="CertificatePath" name="file" type="file" class="form-control" />
-        <span asp-validation-for="CertificatePath" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="IlnessDate" class="control-label">Дата начала болезни</label>
-        <input asp-for="IlnessDate" class="form-control" />
-        <span asp-validation-for="IlnessDate" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="RecoveryDate" class="control-label">Дата выздоровления</label>
-        <input asp-for="RecoveryDate" class="form-control" />
-        <span asp-validation-for="RecoveryDate" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Answer" class="control-label">Комментарии работника</label>
-        <input asp-for="Answer" class="form-control" />
-        <span asp-validation-for="Answer" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Создать</button>
-    </div>
-</form>
-
-
-
+</div>
 
 
 

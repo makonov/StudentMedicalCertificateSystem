@@ -40,7 +40,7 @@ namespace StudentMedicalCertificateSystem.Controllers
             _photoService = photoService;
         }
 
-        [Authorize(Roles = "admin, user")]
+        [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> Index(int page = 1)
         {
             var totalCount = await _certificateRepository.Count();
@@ -63,23 +63,13 @@ namespace StudentMedicalCertificateSystem.Controllers
             return View(viewModel);
         }
 
-        [Authorize(Roles = "admin, user")]
+        [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> Create()
         {
             await MakeLists();
             var medicalCertificateViewModel = new CreateMedicalCertificateViewModel();
 
             return View(medicalCertificateViewModel);
-        }
-
-        [HttpGet]
-        public async Task<JsonResult> SearchStudents(string searchTerm)
-        {
-            var students = await _studentRepository.GetAll();
-            students = students.Select(s => s).Where(s => $"{s.LastName} {s.FirstName} {s.Patronymic}".Contains(searchTerm)).ToList();
-            var result = students.Select(s => new { Value = s.StudentID.ToString(), Text = $"{s.LastName} {s.FirstName} {s.Patronymic}" });
-
-            return Json(result);
         }
 
         private async Task MakeLists()
@@ -109,7 +99,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin, user")]
+        [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> Create(CreateMedicalCertificateViewModel certificateViewModel, IFormFile file)
         {
             // Проверка, выбран ли студент
@@ -184,7 +174,7 @@ namespace StudentMedicalCertificateSystem.Controllers
             }
         }
 
-        [Authorize(Roles = "admin, user")]
+        [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> Edit(int id)
         {
             var certificate = await _certificateRepository.GetIncludedByIdAsync(id);
@@ -215,11 +205,9 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin, user")]
+        [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> Edit(int id, EditMedicalCertificateViewModel certificateViewModel, IFormFile file)
         {
-            
-
             var existingCertificate = await _certificateRepository.GetIncludedByIdAsync(id);
 
             if (existingCertificate == null)
@@ -288,20 +276,49 @@ namespace StudentMedicalCertificateSystem.Controllers
             return RedirectToAction("Index");   
         }
 
-        [HttpGet]
         [HttpPost]
-        public async Task<IActionResult> Filter(FilterCertificatesViewModel filterViewModel, int page = 1)
+        [Authorize(Policy = "UserOrAdminPolicy")]
+        public async Task<IActionResult> Filter(FilterCertificatesViewModel filterViewModel)
         {
-            ModelState.Remove(nameof(filterViewModel.FullName));
-            string fullName = TempData["FullName"] as string;
-            DateTime? recoveryDate = TempData["RecoveryDate"] as DateTime?;
-            DateTime? illnessDate = TempData["IllnessDate"] as DateTime?;
-            
-            TempData.Remove("FullName");
-            TempData.Remove("RecoveryDate");
-            TempData.Remove("IllnessDate");
+            ModelState.Remove("FullName");
+            var certificates = await GetFilteredCertificates(filterViewModel);
 
-            filterViewModel.FullName = fullName == null ? filterViewModel.FullName : fullName;
+            var paginatedCertificates = certificates
+                .Skip((1 - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            ViewBag.StudentList = new SelectList(await GetStudentFullNamesWithGroups(), "Value", "Text");
+
+            var newViewModel = new ShowMedicalCertificateViewModel
+            {
+                Certificates = paginatedCertificates,
+                FilterViewModel = new FilterCertificatesViewModel
+                {
+                    StudentData = filterViewModel.StudentData,
+                    RecoveryDate = filterViewModel.RecoveryDate,
+                    IlnessDate = filterViewModel.IlnessDate,
+                },
+                PagingInfo = new PagingInfo
+                {
+                    CurrentPage = 1,
+                    ItemsPerPage = PageSize,
+                    TotalItems = certificates.Count,
+                    TotalPages = (int)Math.Ceiling((double)certificates.Count / PageSize)
+                }
+            };
+
+            return View("Index", newViewModel);
+        }
+
+
+        [HttpGet]
+        [Authorize(Policy = "UserOrAdminPolicy")]
+        public async Task<IActionResult> Filter(int page = 1, string studentData = null, DateTime? illnessDate = null, DateTime? recoveryDate = null)
+        {
+            FilterCertificatesViewModel filterViewModel = new FilterCertificatesViewModel();
+
+            filterViewModel.StudentData = studentData == null ? filterViewModel.StudentData : studentData;
             filterViewModel.IlnessDate = illnessDate == null ? filterViewModel.IlnessDate : illnessDate;
             filterViewModel.RecoveryDate = recoveryDate == null ? filterViewModel.RecoveryDate : recoveryDate;
             var certificates = await GetFilteredCertificates(filterViewModel);
@@ -313,15 +330,10 @@ namespace StudentMedicalCertificateSystem.Controllers
 
             ViewBag.StudentList = new SelectList(await GetStudentFullNamesWithGroups(), "Value", "Text");
 
-            var viewModel = new ShowMedicalCertificateViewModel
+            var newViewModel = new ShowMedicalCertificateViewModel
             {
                 Certificates = paginatedCertificates,
-                FilterViewModel = new FilterCertificatesViewModel
-                {
-                    FullName = filterViewModel.FullName,
-                    RecoveryDate = filterViewModel.RecoveryDate,
-                    IlnessDate = filterViewModel.IlnessDate,
-                },
+                FilterViewModel = filterViewModel,
                 PagingInfo = new PagingInfo
                 {
                     CurrentPage = page,
@@ -331,21 +343,22 @@ namespace StudentMedicalCertificateSystem.Controllers
                 }
             };
 
-
-            return View("Index", viewModel);
+            return View("Index", newViewModel);
         }
 
         private async Task<List<MedicalCertificate>> GetFilteredCertificates(FilterCertificatesViewModel filterViewModel)
         {
             List<MedicalCertificate> certificates = new List<MedicalCertificate>();
 
-            if (filterViewModel.FullName != null)
+            if (filterViewModel.StudentData != null)
             {
-                string[] fullName = filterViewModel.FullName.Split();
+                string[] studentData = filterViewModel.StudentData.Split(" -- ");
+                string[] fullName = studentData[0].Split();
+                string groupName = studentData[1];
                 string lastName = fullName[0];
                 string firstName = fullName[1];
                 string patronymic = fullName[2];
-                Student foundStudent = await _studentRepository.GetDefaultByFullName(lastName, firstName, patronymic);
+                Student foundStudent = await _studentRepository.GetByFullNameAndGroup(lastName, firstName, patronymic, groupName);
                 certificates = await _certificateRepository.GetAllSortedAndIncludedByStudentIdAsync(foundStudent.StudentID);
             }
 
@@ -369,7 +382,7 @@ namespace StudentMedicalCertificateSystem.Controllers
             return certificates;
         }
 
-        [Authorize(Roles = "admin, user")]
+        [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> Delete(int id)
         {
             if (id == null)
@@ -389,7 +402,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin, user")]
+        [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var certificate = await _certificateRepository.GetByIdAsync(id);

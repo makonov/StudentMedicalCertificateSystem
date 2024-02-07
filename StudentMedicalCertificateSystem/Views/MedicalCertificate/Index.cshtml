@@ -55,7 +55,7 @@
             </tbody>
         </table>
         <div class="pagination">
-    <nav aria-label="Page navigation">
+            <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center">
                     @if (Model.PagingInfo.TotalPages > 1)
                     {
@@ -79,17 +79,14 @@
                         </li>
                     }
                 </ul>
-    </nav>
-</div>
+            </nav>
+        </div>
         @functions {
         string GetPaginationUrl(int page, ShowMedicalCertificateViewModel model)
         {
             if (model.FilterViewModel != null)
             {
-                TempData["FullName"] = model.FilterViewModel.FullName;
-                TempData["RecoveryDate"] = model.FilterViewModel.RecoveryDate;
-                TempData["IlnessDate"] = model.FilterViewModel.IlnessDate;
-                return Url.Action("Filter", new { page = page, filterViewModel = model.FilterViewModel });
+                return Url.Action("Filter", new { page = page, studentData = model.FilterViewModel.StudentData, illnessDate = model.FilterViewModel.IlnessDate, recoveryDate = model.FilterViewModel.RecoveryDate });
             }
             else
             {

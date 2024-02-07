@@ -4,7 +4,7 @@ namespace StudentMedicalCertificateSystem.ViewModels
 {
     public class FilterCertificatesViewModel
     {
-        public string FullName { get; set; }
+        public string StudentData { get; set; }
         [DataType(DataType.Date)]
         public DateTime? IlnessDate { get; set; }
         [DataType(DataType.Date)]

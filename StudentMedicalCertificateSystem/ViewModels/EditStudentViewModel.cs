@@ -1,21 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace StudentMedicalCertificateSystem.Models
+namespace StudentMedicalCertificateSystem.ViewModels
 {
-    public class Student
+    public class EditStudentViewModel
     {
-        [Key]
         public int StudentID { get; set; }
-
-        [ForeignKey("StudentGroup")]
+        [Required(ErrorMessage = "Поле 'Группа' обязательно для заполнения")]
         public int GroupID { get; set; }
-        public virtual StudentGroup? Group { get; set; }
-
-        [ForeignKey("EducationalOffice")]
+        [Required(ErrorMessage = "Поле 'Учебный офис' обязательно для заполнения")]
         public int OfficeID { get; set; }
-        public virtual EducationalOffice? Office { get; set; }
-        
+
         [Required(ErrorMessage = "Поле 'Фамилия' обязательно для заполнения")]
         public string? LastName { get; set; }
 
@@ -24,9 +18,9 @@ namespace StudentMedicalCertificateSystem.Models
 
         [Required(ErrorMessage = "Поле 'Отчество' обязательно для заполнения")]
         public string? Patronymic { get; set; }
-
-        public int Course {  get; set; }
-        [DataType(DataType.Date)]
-        public DateTime BirthDate { get; set; }
+        [Range(1, 5, ErrorMessage = "Введите значение от 1 до 5")]
+        public int Course { get; set; }
+        [Required(ErrorMessage = "Поле 'Дата рождения' обязательно для заполнения"), DataType(DataType.Date)]
+        public DateTime? BirthDate { get; set; }
     }
 }

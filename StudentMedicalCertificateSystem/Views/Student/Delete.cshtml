@@ -1,70 +1,61 @@
-﻿@model StudentMedicalCertificateSystem.Models.MedicalCertificate
+﻿@model StudentMedicalCertificateSystem.Models.Student
 
 <h2>Подтверждение удаления</h2>
 
 <div>
-    <h4>Вы уверены, что хотите удалить эту справку?</h4>
+    <h4>Вы уверены, что хотите удалить этого студента?</h4>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
-            ID сертификата
+            ID студента
         </dt>
         <dd class="col-sm-10">
-            @Model.CertificateID
+            @Model.StudentID
         </dd>
 
         <dt class="col-sm-2">
-            Студент
+            ФИО студента
         </dt>
         <dd class="col-sm-10">
-            @Model.Student.LastName @Model.Student.FirstName @Model.Student.Patronymic
+            @Model.LastName @Model.FirstName @Model.Patronymic
         </dd>
 
         <dt class="col-sm-2">
-            Клиника
+            Группа
         </dt>
         <dd class="col-sm-10">
-            @Model.Clinic.ClinicName
+            @Model.Group.GroupName
         </dd>
 
         <dt class="col-sm-2">
-            Дата болезни
+            Учебный офис
         </dt>
         <dd class="col-sm-10">
-            @Model.IlnessDate.ToString("dd.MM.yyyy") - @Model.RecoveryDate.ToString("dd.MM.yyyy")
+            @Model.Office.OfficeName
         </dd>
 
         <dt class="col-sm-2">
-            Комментарии сотрудника
-        </dt>
-        @if (Model.Answer != null)
-        {
-            <dd class="col-sm-10">
-                @Model.Answer
-            </dd>
-        }
-        else
-        {
-            <dd class="col-sm-10">
-                Нет
-            </dd>
-        }
-
-        <dt class="col-sm-2">
-            Дата создания
+            Курс
         </dt>
         <dd class="col-sm-10">
-            @Model.CreatedAt
+            @Model.Course
+        </dd>
+
+        <dt class="col-sm-2">
+            Дата рождения
+        </dt>
+        <dd class="col-sm-10">
+            @Model.BirthDate.ToString("dd.MM.yyyy")
         </dd>
 
     </dl>
-    
+
     <br />
 
     <form asp-action="Delete" method="post">
         @Html.AntiForgeryToken()
         <div class="form-actions no-color">
-            <input type="hidden" asp-for="CertificateID" />
+            <input type="hidden" asp-for="StudentID" />
             <input type="submit" value="Удалить" class="btn btn-danger" />
             <a asp-action="Index" class="btn btn-secondary">Отменить</a>
         </div>
@@ -72,20 +63,19 @@
 </div>
 
 <style>
-    /* Стилизация таблички */
     dl.row {
-
         width: 100%;
         margin: 0;
         border-spacing: 0;
-        border-collapse: separate; /* Добавляем отдельные границы для ячеек */
+        border-collapse: separate; 
     }
 
-    dt{
+    dt {
         display: table-cell;
         padding: 10px;
         border: 1px solid #dee2e6;
     }
+
     dt {
         font-weight: bold;
     }

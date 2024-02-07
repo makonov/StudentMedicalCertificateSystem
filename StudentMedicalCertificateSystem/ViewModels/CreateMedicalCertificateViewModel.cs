@@ -19,6 +19,5 @@ namespace StudentMedicalCertificateSystem.ViewModels
         [Required(ErrorMessage = "Дата выздоровления обязательна"), DataType(DataType.Date)]
         public DateTime? RecoveryDate { get; set; }
         public string? Answer { get; set; }
-        //public List<(string FullName, string Group)> AllStudentFullNamesWithGroups { get; set; }
     }
 }

@@ -1,22 +1,213 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using StudentMedicalCertificateSystem.Data;
 using StudentMedicalCertificateSystem.Interfaces;
+using StudentMedicalCertificateSystem.Models;
+using StudentMedicalCertificateSystem.Repository;
+using StudentMedicalCertificateSystem.ViewModels;
 
 namespace StudentMedicalCertificateSystem.Controllers
 {
+    [Authorize(Policy = "UserOrAdminPolicy")]
     public class StudentController : Controller
     {
         private readonly IStudentRepository _studentRepository;
+        private readonly IStudentGroupRepository _groupRepository;
+        private readonly IEducationalOfficeRepository _officeRepository;
+        private const int PageSize = 10;
 
-        public StudentController(IStudentRepository studentRepository)
+        public StudentController(IStudentRepository studentRepository,
+            IStudentGroupRepository groupRepository,
+            IEducationalOfficeRepository officeRepository)
         {
             _studentRepository = studentRepository;
+            _groupRepository = groupRepository;
+            _officeRepository = officeRepository;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            var students = _studentRepository.GetAllSortedAndIncludedAsync();
-            return View(students);
+            ViewBag.StudentList = new SelectList(await GetStudents(), "Value", "Text");
+
+            var totalCount = await _studentRepository.Count();
+            var totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
+
+            var students = await _studentRepository.GetPagedStudents(page, PageSize);
+
+            var viewModel = new ShowStudentsViewModel
+            {
+                Students = students,
+                PagingInfo = new PagingInfo
+                {
+                    CurrentPage = page,
+                    ItemsPerPage = PageSize,
+                    TotalItems = totalCount,
+                    TotalPages = totalPages
+                }
+            };
+            return View(viewModel);
+        }
+
+        private async Task<List<SelectListItem>> GetGroups()
+        {
+            return await _groupRepository.GetGroupsAsSelectList();
+        }
+
+        private async Task<List<SelectListItem>> GetOffices()
+        {
+            return await _officeRepository.GetOfficesAsSelectList();
+        }
+
+        private async Task<List<SelectListItem>> GetStudents()
+        {
+            return await _studentRepository.GetStudentFullNamesWithGroupsAsSelectedList();
+        }
+
+        public async Task MakeLists()
+        {
+            ViewBag.GroupList = new SelectList(await GetGroups(), "Value", "Text");
+            ViewBag.OfficeList = new SelectList(await GetOffices(), "Value", "Text");
+        }
+
+        public async Task<IActionResult> Create()
+        {
+            await MakeLists();
+            var viewModel = new CreateStudentViewModel();
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateStudentViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                ModelState.AddModelError("", "Произошла ошибка");
+                await MakeLists();
+                return View(viewModel);
+            }
+
+            var student = new Student
+            {
+                GroupID = viewModel.GroupID,
+                OfficeID = viewModel.OfficeID,
+                LastName = viewModel.LastName,
+                FirstName = viewModel.FirstName,
+                Patronymic = viewModel.Patronymic,
+                Course = viewModel.Course,
+                BirthDate = viewModel.BirthDate.HasValue ? viewModel.BirthDate.Value : default(DateTime)
+            };
+
+            _studentRepository.Add(student);
+            _studentRepository.Save();
+
+            return RedirectToAction("Index");   
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            await MakeLists();
+            var student = await _studentRepository.GetIncludedByIdAsync(id);
+
+            var viewModel = new EditStudentViewModel
+            {
+                StudentID = student.StudentID,
+                GroupID = student.GroupID,
+                OfficeID = student.OfficeID,
+                LastName = student.LastName,
+                FirstName = student.FirstName,
+                Patronymic = student.Patronymic,
+                Course = student.Course,
+                BirthDate = student.BirthDate
+            };
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, EditStudentViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                ModelState.AddModelError("", "Произошла ошибка");
+                await MakeLists();
+                return View(viewModel);
+            }
+
+            var student = new Student
+            {
+                StudentID = id,
+                GroupID = viewModel.GroupID,
+                OfficeID = viewModel.OfficeID,
+                LastName = viewModel.LastName,
+                FirstName = viewModel.FirstName,
+                Patronymic = viewModel.Patronymic,
+                Course = viewModel.Course,
+                BirthDate = viewModel.BirthDate.HasValue ? viewModel.BirthDate.Value : default(DateTime)
+            };
+
+            _studentRepository.Update(student);
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            var student = await _studentRepository.GetIncludedByIdAsync(id);
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            return View(student);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var student = await _studentRepository.GetIncludedByIdAsync(id);
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            _studentRepository.Delete(student);
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Find(FindStudentViewModel findViewModel)
+        {
+            ViewBag.StudentList = new SelectList(await GetStudents(), "Value", "Text");
+            if (!ModelState.IsValid)
+            {
+                ModelState.AddModelError("", "Произошла ошибка");
+                return View(findViewModel);
+            }
+
+            string[] studentData = findViewModel.StudentData.Split(" -- ");
+            string[] fullName = studentData[0].Split();
+            string groupName = studentData[1];
+            string lastName = fullName[0];
+            string firstName = fullName[1];
+            string patronymic = fullName[2];
+            Student foundStudent = await _studentRepository.GetByFullNameAndGroup(lastName, firstName, patronymic, groupName);
+            List<Student> students = new List<Student>
+            {
+                foundStudent
+            };
+            return View("Index", students);
         }
     }
 }

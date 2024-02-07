@@ -1,0 +1,87 @@
+﻿@model StudentMedicalCertificateSystem.ViewModels.ShowStudentsViewModel
+
+@{
+    ViewData["Title"] = "Студенты";
+}
+
+<a class="btn btn-sm btn-primary" href="@Url.Action("Create")">Добавить нового студента</a>
+<br />
+
+@await Html.PartialAsync("_FindPartial", new StudentMedicalCertificateSystem.ViewModels.FindStudentViewModel())
+<table>
+    <thead>
+        <th>ID студента</th>
+        <th>Фамилия</th>
+        <th>Имя</th>
+        <th>Отчество</th>
+        <th>Группа</th>
+        <th>Офис</th>
+        <th>Курс</th>
+        <th>Дата рождения</th>
+        <th>Действия</th>
+    </thead>
+    <tbody>
+        @foreach (var student in Model.Students)
+        {
+            <tr>
+                <td>@student.StudentID</td>
+                <td>@student.LastName</td>
+                <td>@student.FirstName</td>
+                <td>@student.Patronymic</td>
+                <td>@student.Group.GroupName</td>
+                <td>@student.Office.OfficeName</td>
+                <td>@student.Course</td>
+                <td>@student.BirthDate.ToString("dd.MM.yyyy")</td>
+                <td>
+                    <a asp-controller="Student" asp-action="Edit" asp-route-id="@student.StudentID">Редактировать</a> ||
+                    <a asp-controller="Student" asp-action="Delete" asp-route-id="@student.StudentID">Удалить</a>
+                </td>
+            </tr>        
+        }
+    </tbody>
+</table>
+
+<div class="pagination">
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            @if (Model.PagingInfo.TotalPages > 1)
+            {
+                <li class="page-item @(Model.PagingInfo.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { page=1 })" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+
+                @for (int i = 1; i <= Model.PagingInfo.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PagingInfo.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page=i })">@i</a>
+                    </li>
+                }
+                
+                <li class="page-item @(Model.PagingInfo.CurrentPage == Model.PagingInfo.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { page=Model.PagingInfo.TotalPages })" aria-label="Next">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+</style>

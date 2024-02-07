@@ -22,6 +22,7 @@ namespace StudentMedicalCertificateSystem
             builder.Services.AddScoped<IStudentRepository, StudentRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IEducationalOfficeRepository, EducationalOfficeRepository>();
+            builder.Services.AddScoped<IStudentGroupRepository, StudentGroupRepository>();
             builder.Services.AddScoped<IPhotoService, PhotoService>();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -41,6 +42,9 @@ namespace StudentMedicalCertificateSystem
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdminPolicy", policy => policy.RequireRole("admin"));
+                options.AddPolicy("UserPolicy", policy => policy.RequireRole("user"));
+                options.AddPolicy("GuestPolicy", policy => policy.RequireRole("guest"));
+                options.AddPolicy("UserOrAdminPolicy", policy => policy.RequireRole("user", "admin"));
             });
 
             var app = builder.Build();
@@ -73,6 +77,10 @@ namespace StudentMedicalCertificateSystem
             app.MapControllerRoute(
                 name: "medicalCertificates",
                 pattern: "{controller=MedicalCertificate}/{action=Index}/{id?}");
+
+            app.MapControllerRoute(
+                name: "students",
+                pattern: "{controller=Student}/{action=Index}/{id?}");
 
             app.MapControllerRoute(
                 name: "admins",

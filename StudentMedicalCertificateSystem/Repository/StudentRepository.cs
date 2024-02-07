@@ -71,7 +71,42 @@ namespace StudentMedicalCertificateSystem.Repository
 
         public async Task<List<SelectListItem>> GetStudentFullNamesWithGroupsAsSelectedList()
         {
-            return await _context.Students.Include(s => s.Group).Select(s => new SelectListItem { Value = $"{s.LastName} {s.FirstName} {s.Patronymic}", Text = $"{s.LastName} {s.FirstName} {s.Patronymic} - {s.Group.GroupName}" }).ToListAsync();
+            return await _context.Students.Include(s => s.Group).Select(s => new SelectListItem { Value = $"{s.LastName} {s.FirstName} {s.Patronymic}", Text = $"{s.LastName} {s.FirstName} {s.Patronymic} -- {s.Group.GroupName}" }).ToListAsync();
+        }
+
+        public async Task<Student> GetIncludedByIdAsync(int id)
+        {
+            return await _context.Students
+                .Include(s => s.Group)
+                .Include(s => s.Office)
+                .FirstOrDefaultAsync(s => s.StudentID == id);
+        }
+
+        public async Task<Student> GetByFullNameAndGroup(string lastName, string firstName, string patronymic, string group)
+        {
+            return await _context.Students
+                .Include(s => s.Group)
+                .Include(s => s.Office)
+                .SingleOrDefaultAsync(s => s.LastName == lastName 
+                && s.FirstName == firstName
+                && s.Patronymic == patronymic 
+                && s.Group.GroupName == group);
+        }
+
+        public async Task<int> Count()
+        {
+            return await _context.Students.CountAsync();
+        }
+
+        public async Task<List<Student>> GetPagedStudents(int page, int pageSize)
+        {
+            return await _context.Students
+            .OrderByDescending(s => s.StudentID)
+            .Include(s => s.Group)
+            .Include(s => s.Office)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
         }
     }
 }
