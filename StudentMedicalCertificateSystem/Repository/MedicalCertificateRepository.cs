@@ -55,7 +55,7 @@ namespace StudentMedicalCertificateSystem.Repository
                 .Include(c => c.Student.Group)
                 .Include (c => c.Clinic)
                 .Include(c => c.Diagnosis)
-                .Where(c => c.IlnessDate >= startOfPeriod && c.RecoveryDate <= endOfPeriod)
+                .Where(c => c.IllnessDate >= startOfPeriod && c.IllnessDate <= endOfPeriod)
                 .ToListAsync();
         }
 
@@ -158,5 +158,14 @@ namespace StudentMedicalCertificateSystem.Repository
             return pagedCertificates;
         }
 
+        public async Task<List<MedicalCertificate>> GetAllIncludedAsync()
+        {
+            return await _context.MedicalCertificates
+            .Include(c => c.Student)
+            .Include(c => c.Student.Group)
+            .Include(c => c.Clinic)
+            .Include(c => c.Diagnosis)
+            .ToListAsync();
+        }
     }
 }

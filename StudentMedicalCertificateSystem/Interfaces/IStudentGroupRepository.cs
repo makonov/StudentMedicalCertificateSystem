@@ -5,7 +5,7 @@ namespace StudentMedicalCertificateSystem.Interfaces
 {
     public interface IStudentGroupRepository
     {
-        Task<List<StudentGroup>> GetAll();
+        Task<List<StudentGroup>> GetAllSorted();
         Task<List<SelectListItem>> GetGroupsAsSelectList();
         Task<StudentGroup> GetByIdAsync(int id);
         bool Add(StudentGroup group);

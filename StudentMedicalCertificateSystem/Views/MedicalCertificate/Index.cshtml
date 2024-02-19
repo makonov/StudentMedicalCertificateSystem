@@ -1,33 +1,68 @@
 ﻿@using StudentMedicalCertificateSystem.ViewModels;
+@using StudentMedicalCertificateSystem.Data;
 @model StudentMedicalCertificateSystem.ViewModels.ShowMedicalCertificateViewModel
 
 @{
-    ViewData["Title"] = "Заявки";
+    ViewData["Title"] = "Справки";
 }
 
-<a class="btn btn-sm btn-primary" href="@Url.Action("Create")">Создать новую заявку</a>
-<br />
+@section Scripts {
+    <!-- Подключение Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 
-@await Html.PartialAsync("_FilterPartial", new StudentMedicalCertificateSystem.ViewModels.FilterCertificatesViewModel())
-@if (Model.Certificates.Count() != 0)
-{
-    <div class="container">
+    <!-- Подключение Bootstrap-select CSS и JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+}
+
+@functions {
+    string GetPaginationUrl(int page, ShowMedicalCertificateViewModel model)
+    {
+        if (model.FilterViewModel != null)
+        {
+            return Url.Action("Filter", new { page = page, studentData = model.FilterViewModel.StudentData, illnessDate = model.FilterViewModel.IllnessDate, recoveryDate = model.FilterViewModel.RecoveryDate });
+        }
+        else
+        {
+            return Url.Action("Index", new { page = page });
+        }
+    }
+
+    string GetDownloadingUrl(ShowMedicalCertificateViewModel model)
+    {
+        if (model.FilterViewModel != null)
+        {
+            return Url.Action("DownloadFilteredExcelReport", new { studentData = model.FilterViewModel.StudentData, illnessDate = model.FilterViewModel.IllnessDate, recoveryDate = model.FilterViewModel.RecoveryDate });
+        }
+        else
+        {
+            return Url.Action("DownloadExcelReport");
+        }
+    }
+}
+
+<div class="container">
+    @if (User.IsInRole(UserRoles.User) || User.IsInRole(UserRoles.Admin))
+    {
+        <a class="btn btn-sm btn-primary" href="@Url.Action("Create")">Добавить новую справку</a>
+    }
+    <a class="btn btn-sm btn-primary" href="@GetDownloadingUrl(Model)">Скачать отчет</a>
+    <br />
+
+    @await Html.PartialAsync("_FilterPartial", new StudentMedicalCertificateSystem.ViewModels.FilterCertificatesViewModel())
+    @if (Model.Certificates.Count() != 0)
+    {
         <table>
             <thead>
-                <tr>
-                    <th>Номер заявки</th>
-                    <th>Студент</th>
-                    <th>Группа</th>
-                    <th>Клиника</th>
-                    <th>Диагноз</th>
-                    <th>Справка</th>
-                    <th>Дата начала болезни</th>
-                    <th>Дата выздоровления</th>
-                    <th>Комментарии сотрудника</th>
-                    <th>Дата создания</th>
-                    <th>Дата последнего обновления</th>
-                    <th>Действия</th>
-                </tr>
+            <th>ID справки</th>
+            <th>Студент</th>
+            <th>Группа</th>
+            <th>Больница</th>
+            <th>Диагноз</th>
+            <th>Период болезни</th>
+            <th>Действия</th>
             </thead>
             <tbody>
                 @foreach (var certificate in Model.Certificates)
@@ -37,20 +72,60 @@
                         <td>@certificate.Student.LastName @certificate.Student.FirstName @certificate.Student.Patronymic</td>
                         <td>@certificate.Student.Group.GroupName</td>
                         <td>@certificate.Clinic.ClinicName</td>
-                        <td>@certificate.Diagnosis.DiagnosisName</td>
+                        <td>@certificate.Diagnosis.DiagnosisName @certificate.Diagnosis.Code</td>
+                        <td>@certificate.IllnessDate.ToString("dd.MM.yyyy") - @certificate.RecoveryDate.ToString("dd.MM.yyyy")</td>
                         <td>
-                            <a target="_blank" href="@Url.Action("ImageView", "MedicalCertificate", new { imagePath = certificate.CertificatePath })">Посмотреть справку</a>
-                        </td>
-                        <td>@certificate.IlnessDate.ToString("dd.MM.yyyy")</td>
-                        <td>@certificate.RecoveryDate.ToString("dd.MM.yyyy")</td>
-                        <td>@certificate.Answer</td>
-                        <td>@certificate.CreatedAt</td>
-                        <td>@certificate.UpdatedAt</td>
-                        <td>
-                            <a asp-controller="MedicalCertificate" asp-action="Edit" asp-route-id="@certificate.CertificateID">Редактировать</a> ||
-                            <a asp-controller="MedicalCertificate" asp-action="Delete" asp-route-id="@certificate.CertificateID">Удалить</a>
+                            <a href="#" data-toggle="modal" data-target="#certificateDetailsModal_@certificate.CertificateID" class="btn btn-sm btn-info" style="margin: 2px;">Детали</a>
+                            @if(User.IsInRole(UserRoles.User) || User.IsInRole(UserRoles.Admin))
+                            {
+                                <a asp-controller="MedicalCertificate" asp-action="Edit" asp-route-id="@certificate.CertificateID" class="btn btn-sm btn-secondary" style="margin: 2px;">Редактировать</a>
+                                <a asp-controller="MedicalCertificate" asp-action="Delete" asp-route-id="@certificate.CertificateID" class="btn btn-sm btn-danger" style="margin: 2px;"> Удалить</a>
+                            }
                         </td>
                     </tr>
+
+                    <div class="modal fade" id="certificateDetailsModal_@certificate.CertificateID" tabindex="-1" role="dialog" aria-labelledby="certificateDetailsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="certificateDetailsModalLabel">Детали справки</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="certificate-details">
+                                        <p><strong>Номер справки:</strong> @certificate.CertificateID</p>
+                                        <p><strong>ФИО студента:</strong> @certificate.Student.LastName @certificate.Student.FirstName @certificate.Student.Patronymic</p>
+                                        <p><strong>Группа:</strong> @certificate.Student.Group.GroupName</p>
+                                        <p><strong>Больница:</strong> @certificate.Clinic.ClinicName</p>
+                                        <p><strong>Диагноз:</strong> @certificate.Diagnosis.DiagnosisName @certificate.Diagnosis.Code</p>
+                                        <p><strong>Период болезни:</strong> с @certificate.IllnessDate.ToString("dd.MM.yyyy") по @certificate.RecoveryDate.ToString("dd.MM.yyyy")</p>
+                                        <p><strong>Комментарий:</strong> 
+                                            @if (!string.IsNullOrEmpty(certificate.Answer))
+                                            {
+                                                <span>@certificate.Answer</span>
+                                            }
+                                            else 
+                                            { 
+                                                <span>нет</span>
+                                            }
+                                        </p>
+                                        <p><strong>Дата создания:</strong> @certificate.CreatedAt</p>
+                                        <p><strong>Дата обновления:</strong> @certificate.UpdatedAt</p>
+                                    </div>
+                                    <div class="certificate-image">
+                                        <a target="_blank" href="@Url.Action("ImageView", "MedicalCertificate", new { imagePath = certificate.CertificatePath })">
+                                            <img src="@certificate.CertificatePath" alt="Справка">
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 }
             </tbody>
         </table>
@@ -65,7 +140,7 @@
                             </a>
                         </li>
 
-                        @for (int i = 1; i <= Model.PagingInfo.TotalPages; i++)
+                        @for (int i = Math.Max(1, Model.PagingInfo.CurrentPage - 10); i <= Math.Min(Model.PagingInfo.TotalPages, Model.PagingInfo.CurrentPage + 10); i++)
                         {
                             <li class="page-item @(i == Model.PagingInfo.CurrentPage ? "active" : "")">
                                 <a class="page-link" href="@GetPaginationUrl(i, Model)">@i</a>
@@ -81,27 +156,13 @@
                 </ul>
             </nav>
         </div>
-        @functions {
-        string GetPaginationUrl(int page, ShowMedicalCertificateViewModel model)
-        {
-            if (model.FilterViewModel != null)
-            {
-                return Url.Action("Filter", new { page = page, studentData = model.FilterViewModel.StudentData, illnessDate = model.FilterViewModel.IlnessDate, recoveryDate = model.FilterViewModel.RecoveryDate });
-            }
-            else
-            {
-                return Url.Action("Index", new { page = page });
-            }
-        }
+
     }
-
-
-    </div>
-}
-else
-{
-    <p>Увы, но ничего не найдено</p>
-}
+    else
+    {
+        <p>Увы, но ничего не найдено</p>
+    }
+</div>
 
 <style>
     table {
@@ -122,5 +183,22 @@ else
     td:nth-child(3) {
         white-space: nowrap;
     }
+
+    td:nth-child(6) {
+        white-space: nowrap;
+    }
+
+    .certificate-image {
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .certificate-image img {
+        max-width: 100%; /* Максимальная ширина изображения будет равна ширине окна */
+        height: auto; /* Автоматическое масштабирование высоты для сохранения пропорций */
+        display: block; /* Убирает пустые промежутки, если они есть */
+        margin: 0 auto; /* Центрирует изображение по горизонтали */
+    }
+
 
 </style>

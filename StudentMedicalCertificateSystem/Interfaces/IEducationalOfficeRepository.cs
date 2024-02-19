@@ -5,7 +5,7 @@ namespace StudentMedicalCertificateSystem.Interfaces
 {
     public interface IEducationalOfficeRepository
     {
-        Task<List<EducationalOffice>> GetAll();
+        Task<List<EducationalOffice>> GetAllSorted();
         Task<List<SelectListItem>> GetOfficesAsSelectList();
         Task<EducationalOffice> GetByIdAsync(int id);
         bool Add(EducationalOffice office);

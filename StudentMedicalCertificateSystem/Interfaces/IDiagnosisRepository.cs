@@ -5,7 +5,7 @@ namespace StudentMedicalCertificateSystem.Interfaces
 {
     public interface IDiagnosisRepository
     {
-        Task<List<Diagnosis>> GetAll();
+        Task<List<Diagnosis>> GetAllSorted();
         Task<List<SelectListItem>> GetDiagnosesAsSelectList();
         Task<Diagnosis> GetByIdAsync(int id);
         bool Add(Diagnosis diagnosis);

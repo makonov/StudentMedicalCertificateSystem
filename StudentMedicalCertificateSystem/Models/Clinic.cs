@@ -6,6 +6,7 @@ namespace StudentMedicalCertificateSystem.Models
     {
         [Key]
         public int ClinicID { get; set; }
+        [Required(ErrorMessage = "Необходимо ввести наименование больницы")]
         public string? ClinicName { get; set; }
     }
 }

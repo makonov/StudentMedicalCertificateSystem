@@ -5,7 +5,7 @@ namespace StudentMedicalCertificateSystem.Interfaces
 {
     public interface IClinicRepository
     {
-        Task<List<Clinic>> GetAll();
+        Task<List<Clinic>> GetAllSorted();
         Task<List<SelectListItem>> GetClinicsAsSelectList();
         Task<Clinic> GetByIdAsync(int id);
         bool Add(Clinic clinic);

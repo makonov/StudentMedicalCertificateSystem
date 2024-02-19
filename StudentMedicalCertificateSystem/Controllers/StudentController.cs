@@ -90,8 +90,8 @@ namespace StudentMedicalCertificateSystem.Controllers
 
             var student = new Student
             {
-                GroupID = viewModel.GroupID,
-                OfficeID = viewModel.OfficeID,
+                GroupID = (int)viewModel.GroupID,
+                OfficeID = (int)viewModel.OfficeID,
                 LastName = viewModel.LastName,
                 FirstName = viewModel.FirstName,
                 Patronymic = viewModel.Patronymic,
@@ -100,7 +100,6 @@ namespace StudentMedicalCertificateSystem.Controllers
             };
 
             _studentRepository.Add(student);
-            _studentRepository.Save();
 
             return RedirectToAction("Index");   
         }
@@ -109,6 +108,11 @@ namespace StudentMedicalCertificateSystem.Controllers
         {
             await MakeLists();
             var student = await _studentRepository.GetIncludedByIdAsync(id);
+            
+            if (student == null)
+            {
+                return NotFound();
+            }
 
             var viewModel = new EditStudentViewModel
             {
@@ -121,11 +125,6 @@ namespace StudentMedicalCertificateSystem.Controllers
                 Course = student.Course,
                 BirthDate = student.BirthDate
             };
-
-            if (student == null)
-            {
-                return NotFound();
-            }
 
             return View(viewModel);
         }
@@ -144,8 +143,8 @@ namespace StudentMedicalCertificateSystem.Controllers
             var student = new Student
             {
                 StudentID = id,
-                GroupID = viewModel.GroupID,
-                OfficeID = viewModel.OfficeID,
+                GroupID = (int)viewModel.GroupID,
+                OfficeID = (int)viewModel.OfficeID,
                 LastName = viewModel.LastName,
                 FirstName = viewModel.FirstName,
                 Patronymic = viewModel.Patronymic,
@@ -196,18 +195,25 @@ namespace StudentMedicalCertificateSystem.Controllers
                 return View(findViewModel);
             }
 
-            string[] studentData = findViewModel.StudentData.Split(" -- ");
+            string[] studentData = findViewModel.StudentData.Split(" - ");
             string[] fullName = studentData[0].Split();
             string groupName = studentData[1];
             string lastName = fullName[0];
             string firstName = fullName[1];
             string patronymic = fullName[2];
             Student foundStudent = await _studentRepository.GetByFullNameAndGroup(lastName, firstName, patronymic, groupName);
-            List<Student> students = new List<Student>
+            ShowStudentsViewModel viewModel = new ShowStudentsViewModel
             {
-                foundStudent
+                Students = new List<Student> { foundStudent },
+                PagingInfo = new PagingInfo
+                {
+                    CurrentPage = 1,
+                    ItemsPerPage = PageSize,
+                    TotalItems = 1,
+                    TotalPages = 1
+                }
             };
-            return View("Index", students);
+            return View("Index", viewModel);
         }
     }
 }

@@ -27,9 +27,9 @@ namespace StudentMedicalCertificateSystem.Repository
             return Save();
         }
 
-        public async Task<List<StudentGroup>> GetAll()
+        public async Task<List<StudentGroup>> GetAllSorted()
         {
-            return await _context.StudentGroups.ToListAsync();
+            return await _context.StudentGroups.OrderBy(g => g.GroupName).ToListAsync();
         }
 
         public async Task<StudentGroup> GetByIdAsync(int id)

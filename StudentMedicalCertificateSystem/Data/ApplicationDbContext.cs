@@ -11,6 +11,43 @@ namespace StudentMedicalCertificateSystem.Data
 
         }
 
+        // Запрещаем каскадное удаление
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Student>()
+                .HasOne(s => s.Office)
+                .WithMany()
+                .HasForeignKey(s => s.OfficeID)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Office)
+                .WithMany()
+                .HasForeignKey(u => u.OfficeID)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            modelBuilder.Entity<Student>()
+                .HasOne(s => s.Group)
+                .WithMany()
+                .HasForeignKey(s => s.GroupID)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            modelBuilder.Entity<MedicalCertificate>()
+                .HasOne(c => c.Diagnosis)
+                .WithMany()
+                .HasForeignKey(c => c.DiagnosisID)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            modelBuilder.Entity<MedicalCertificate>()
+                .HasOne(c => c.Clinic)
+                .WithMany()
+                .HasForeignKey(c => c.ClinicID)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+        }
+
         public DbSet<User> Users { get; set; }
         public DbSet<StudentGroup> StudentGroups { get; set; }
         public DbSet<EducationalOffice> EducationalOffices { get; set; }

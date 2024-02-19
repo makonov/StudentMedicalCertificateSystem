@@ -26,9 +26,11 @@ namespace StudentMedicalCertificateSystem.Repository
             return Save();
         }
 
-        public async Task<List<Diagnosis>> GetAll()
+        public async Task<List<Diagnosis>> GetAllSorted()
         {
-            return await _context.Diagnoses.ToListAsync();
+            return await _context.Diagnoses
+                .OrderBy(d => d.DiagnosisName)
+                .ToListAsync();
         }
 
         public async Task<Diagnosis> GetByIdAsync(int id)
@@ -38,7 +40,7 @@ namespace StudentMedicalCertificateSystem.Repository
 
         public async Task<List<SelectListItem>> GetDiagnosesAsSelectList()
         {
-            return await _context.Diagnoses.Select(d => new SelectListItem { Value = d.DiagnosisID.ToString(), Text = d.DiagnosisName }).ToListAsync();
+            return await _context.Diagnoses.Select(d => new SelectListItem { Value = d.DiagnosisID.ToString(), Text = $"{d.DiagnosisName} {d.Code}" }).ToListAsync();
         }
 
         public bool Save()

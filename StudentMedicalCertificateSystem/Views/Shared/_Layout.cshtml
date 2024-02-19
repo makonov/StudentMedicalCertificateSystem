@@ -25,11 +25,14 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Домой</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="MedicalCertificate" asp-action="Index">Заявки</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="MedicalCertificate" asp-action="Index">Справки</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Student" asp-action="Index">Информация о студентах</a>
-                        </li>
+                        @if (User.IsInRole(UserRoles.Admin) || User.IsInRole(UserRoles.User))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Reference" asp-action="Index">Справочник</a>
+                            </li>
+                        }
                         @if (User.IsInRole(UserRoles.Admin))
                         {
                             <li class="nav-item">
@@ -71,8 +74,8 @@
 </body>
 </html>
 
-<style>
+@* <style>
   body {
     zoom: 80%;
   }
-</style>
+</style> *@

@@ -9,6 +9,7 @@ namespace StudentMedicalCertificateSystem.ViewModels
         [Required(ErrorMessage = "Необходимо ввести имя пользователя")]
         public string UserName { get; set; }
         [DataType(DataType.Password)]
+        [Required(ErrorMessage = "Необходимо ввести пароль")]
         public string Password { get; set; }
         [Display(Name = "Подтвердите пароль")]
         [Required(ErrorMessage = "Необходимо подтвердить пароль")]
@@ -22,14 +23,13 @@ namespace StudentMedicalCertificateSystem.ViewModels
         [Required(ErrorMessage = "Введите отчество")]
         public string Patronymic {  get; set; }
         [Required(ErrorMessage = "Необходимо выбрать учебный офис")]
-        public int OfficeID { get; set; }
+        public int? OfficeID { get; set; }
         public List<IdentityRole> AllRoles { get; set; }
         [MinLength(1, ErrorMessage = "Необходимо выбрать хотя бы одну роль")]
-        public IList<string> UserRoles { get; set; }
+        public string UserRole { get; set; }
         public CreateUserViewModel()
         {
             AllRoles = new List<IdentityRole>();
-            UserRoles = new List<string>();
         }
     }
 }

@@ -25,14 +25,14 @@ namespace StudentMedicalCertificateSystem.Repository
             return Save();
         }
 
-        public async Task<List<EducationalOffice>> GetAll()
+        public async Task<List<EducationalOffice>> GetAllSorted()
         {
-            return await _context.EducationalOffices.ToListAsync();
+            return await _context.EducationalOffices.OrderBy(o => o.OfficeName).ToListAsync();
         }
 
         public async Task<EducationalOffice> GetByIdAsync(int id)
         {
-            return await _context.EducationalOffices.FirstOrDefaultAsync(u => u.OfficeID == id);
+            return await _context.EducationalOffices.FirstOrDefaultAsync(o => o.OfficeID == id);
         }
 
         public async Task<List<SelectListItem>> GetOfficesAsSelectList()

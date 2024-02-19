@@ -7,11 +7,10 @@ namespace StudentMedicalCertificateSystem.ViewModels
         public string UserID { get; set; }
         public string UserName { get; set; }
         public List<IdentityRole> AllRoles { get; set; }
-        public IList<string> UserRoles { get; set; }
+        public string UserRole { get; set; }
         public ChangeRoleViewModel()
         {
             AllRoles = new List<IdentityRole>();
-            UserRoles = new List<string>();
         }
     }
 }

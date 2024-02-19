@@ -10,7 +10,7 @@ using StudentMedicalCertificateSystem.ViewModels;
 
 namespace StudentMedicalCertificateSystem.Controllers
 {
-    [Authorize(Roles = "admin")]
+    [Authorize(Policy = "AdminPolicy")]
     public class AdminController : Controller
     {
         private readonly UserManager<User> _userManager;
@@ -28,7 +28,8 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         public IActionResult Index()
         {
-            var users = _userManager.Users.ToList();
+            var currentUser = _userManager.GetUserAsync(User).Result;
+            var users = _userManager.Users.Where(u => u.Id != currentUser.Id).ToList();
             var userViewModels = new List<UserViewModel>();
             foreach (var user in users)
             {
@@ -89,7 +90,9 @@ namespace StudentMedicalCertificateSystem.Controllers
             if (!passwordValidationResult.Succeeded)
             {
                 // Пароль не соответствует требованиям
-                TempData["Error"] = "Пароль не соответствует требованиям безопасности.";
+                TempData["Error"] = "Пароль не соответствует требованиям безопасности." +
+                    " Минимальная длина пароля - 6 символов, он должен содержать символы " +
+                    "нижнего и верхнего регистра, цифры, а также специальные символы.";
                 ViewBag.OfficeList = new SelectList(await GetOffices(), "Value", "Text");
                 createUserViewModel.AllRoles = _roleManager.Roles.ToList();
                 return View(createUserViewModel);
@@ -101,13 +104,13 @@ namespace StudentMedicalCertificateSystem.Controllers
                 LastName = createUserViewModel.LastName,
                 FirstName = createUserViewModel.FirstName,
                 Patronymic = createUserViewModel.Patronymic,
-                OfficeID = createUserViewModel.OfficeID
+                OfficeID = (int) createUserViewModel.OfficeID
             };
 
             var newUserResponse = await _userManager.CreateAsync(newUser, createUserViewModel.Password);
 
             if (newUserResponse.Succeeded)
-                await _userManager.AddToRolesAsync(newUser, createUserViewModel.UserRoles);
+                await _userManager.AddToRoleAsync(newUser, createUserViewModel.UserRole);
 
             return RedirectToAction("Index");
         }
@@ -125,7 +128,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 {
                     UserName = user.UserName,
                     UserID = user.Id,
-                    UserRoles = userRoles,
+                    UserRole = userRoles[0],
                     AllRoles = allRoles
                 };
                 return View(model);
@@ -135,24 +138,15 @@ namespace StudentMedicalCertificateSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(string userId, List<string> roles)
+        public async Task<IActionResult> Edit(string userId, string role)
         {
             // получаем пользователя
             User user = await _userManager.FindByIdAsync(userId);
             if (user != null)
             {
-                // получем список ролей пользователя
-                var userRoles = await _userManager.GetRolesAsync(user);
-                // получаем все роли
-                var allRoles = _roleManager.Roles.ToList();
-                // получаем список ролей, которые были добавлены
-                var addedRoles = roles.Except(userRoles);
-                // получаем роли, которые были удалены
-                var removedRoles = userRoles.Except(roles);
-
-                await _userManager.AddToRolesAsync(user, addedRoles);
-
-                await _userManager.RemoveFromRolesAsync(user, removedRoles);
+                var currentRole = await _userManager.GetRolesAsync(user);
+                await _userManager.RemoveFromRolesAsync(user, currentRole);
+                await _userManager.AddToRoleAsync(user, role);
 
                 return RedirectToAction("Index");
             }

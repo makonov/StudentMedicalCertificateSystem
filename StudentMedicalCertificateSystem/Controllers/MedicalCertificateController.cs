@@ -10,10 +10,15 @@ using System.Collections;
 using StudentMedicalCertificateSystem.Repository;
 using Microsoft.AspNetCore.Authorization;
 using StudentMedicalCertificateSystem.ViewModels;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using DocumentFormat.OpenXml.EMMA;
 
 namespace StudentMedicalCertificateSystem.Controllers
 {
-    
     public class MedicalCertificateController : Controller
     {
         private readonly IMedicalCertificateRepository _certificateRepository;
@@ -25,11 +30,11 @@ namespace StudentMedicalCertificateSystem.Controllers
         private const int PageSize = 10;
         private static List<MedicalCertificate> filtered;
 
-        public MedicalCertificateController(IMedicalCertificateRepository certificateRepository, 
-            IDiagnosisRepository diagnosisRepository, 
+        public MedicalCertificateController(IMedicalCertificateRepository certificateRepository,
+            IDiagnosisRepository diagnosisRepository,
             IUserRepository userRepository,
             IClinicRepository clinicRepository,
-            IStudentRepository studentRepository, 
+            IStudentRepository studentRepository,
             IPhotoService photoService)
         {
             _certificateRepository = certificateRepository;
@@ -40,7 +45,6 @@ namespace StudentMedicalCertificateSystem.Controllers
             _photoService = photoService;
         }
 
-        [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> Index(int page = 1)
         {
             var totalCount = await _certificateRepository.Count();
@@ -149,11 +153,11 @@ namespace StudentMedicalCertificateSystem.Controllers
 
                 var certificate = new MedicalCertificate
                 {
-                    StudentID = certificateViewModel.StudentID,
-                    ClinicID = certificateViewModel.ClinicID,
-                    DiagnosisID = certificateViewModel.DiagnosisID,
+                    StudentID = (int)certificateViewModel.StudentID,
+                    ClinicID = (int)certificateViewModel.ClinicID,
+                    DiagnosisID = (int)certificateViewModel.DiagnosisID,
                     CertificatePath = certificateViewModel.CertificatePath,
-                    IlnessDate = certificateViewModel.IlnessDate.HasValue ? certificateViewModel.IlnessDate.Value : default(DateTime),
+                    IllnessDate = certificateViewModel.IlnessDate.HasValue ? certificateViewModel.IlnessDate.Value : default(DateTime),
                     RecoveryDate = certificateViewModel.RecoveryDate.HasValue ? certificateViewModel.RecoveryDate.Value : default(DateTime),
                     Answer = certificateViewModel.Answer,
                     CreatedAt = DateTime.Now,
@@ -179,6 +183,11 @@ namespace StudentMedicalCertificateSystem.Controllers
         {
             var certificate = await _certificateRepository.GetIncludedByIdAsync(id);
 
+            if (certificate == null)
+            {
+                return NotFound();
+            }
+
             var certificateViewModel = new EditMedicalCertificateViewModel
             {
                 CertificateID = certificate.CertificateID,
@@ -187,18 +196,13 @@ namespace StudentMedicalCertificateSystem.Controllers
                 ClinicID = certificate.ClinicID,
                 DiagnosisID = certificate.DiagnosisID,
                 CertificatePath = certificate.CertificatePath,
-                IlnessDate = certificate.IlnessDate,
+                IlnessDate = certificate.IllnessDate,
                 RecoveryDate = certificate.RecoveryDate,
                 Answer = certificate.Answer,
                 CreatedAt = certificate.CreatedAt
             };
 
             await MakeLists();
-
-            if (certificate == null)
-            {
-                return NotFound();
-            }
 
             return View(certificateViewModel);
         }
@@ -258,11 +262,11 @@ namespace StudentMedicalCertificateSystem.Controllers
             var certificate = new MedicalCertificate
             {
                 CertificateID = certificateViewModel.CertificateID,
-                StudentID = certificateViewModel.StudentID,
-                ClinicID = certificateViewModel.ClinicID,
-                DiagnosisID = certificateViewModel.DiagnosisID,
+                StudentID = (int)certificateViewModel.StudentID,
+                ClinicID = (int)certificateViewModel.ClinicID,
+                DiagnosisID = (int)certificateViewModel.DiagnosisID,
                 CertificatePath = certificateViewModel.CertificatePath,
-                IlnessDate = certificateViewModel.IlnessDate.HasValue ? certificateViewModel.IlnessDate.Value : default(DateTime),
+                IllnessDate = certificateViewModel.IlnessDate.HasValue ? certificateViewModel.IlnessDate.Value : default(DateTime),
                 RecoveryDate = certificateViewModel.RecoveryDate.HasValue ? certificateViewModel.RecoveryDate.Value : default(DateTime),
                 Answer = certificateViewModel.Answer,
                 CreatedAt = existingCertificate.CreatedAt,
@@ -273,14 +277,13 @@ namespace StudentMedicalCertificateSystem.Controllers
             await _certificateRepository.UpdateByAnotherCertificateValues(existingCertificate, certificate);
             _certificateRepository.Save();
             certificateViewModel.Student = existingCertificate.Student;
-            return RedirectToAction("Index");   
+            return RedirectToAction("Index");
         }
 
         [HttpPost]
-        [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> Filter(FilterCertificatesViewModel filterViewModel)
         {
-            ModelState.Remove("FullName");
+            ModelState.Remove("StudentData");
             var certificates = await GetFilteredCertificates(filterViewModel);
 
             var paginatedCertificates = certificates
@@ -297,7 +300,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 {
                     StudentData = filterViewModel.StudentData,
                     RecoveryDate = filterViewModel.RecoveryDate,
-                    IlnessDate = filterViewModel.IlnessDate,
+                    IllnessDate = filterViewModel.IllnessDate,
                 },
                 PagingInfo = new PagingInfo
                 {
@@ -313,13 +316,12 @@ namespace StudentMedicalCertificateSystem.Controllers
 
 
         [HttpGet]
-        [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> Filter(int page = 1, string studentData = null, DateTime? illnessDate = null, DateTime? recoveryDate = null)
         {
             FilterCertificatesViewModel filterViewModel = new FilterCertificatesViewModel();
 
             filterViewModel.StudentData = studentData == null ? filterViewModel.StudentData : studentData;
-            filterViewModel.IlnessDate = illnessDate == null ? filterViewModel.IlnessDate : illnessDate;
+            filterViewModel.IllnessDate = illnessDate == null ? filterViewModel.IllnessDate : illnessDate;
             filterViewModel.RecoveryDate = recoveryDate == null ? filterViewModel.RecoveryDate : recoveryDate;
             var certificates = await GetFilteredCertificates(filterViewModel);
 
@@ -352,7 +354,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
             if (filterViewModel.StudentData != null)
             {
-                string[] studentData = filterViewModel.StudentData.Split(" -- ");
+                string[] studentData = filterViewModel.StudentData.Split(" - ");
                 string[] fullName = studentData[0].Split();
                 string groupName = studentData[1];
                 string lastName = fullName[0];
@@ -362,7 +364,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 certificates = await _certificateRepository.GetAllSortedAndIncludedByStudentIdAsync(foundStudent.StudentID);
             }
 
-            var ilnessDate = filterViewModel.IlnessDate ?? default;
+            var ilnessDate = filterViewModel.IllnessDate ?? default;
             var recoveryDate = filterViewModel.RecoveryDate ?? default;
 
 
@@ -371,8 +373,8 @@ namespace StudentMedicalCertificateSystem.Controllers
             if (isValid && certificates.Count() != 0)
             {
                 certificates = certificates.Select(c => c)
-                    .Where(c => c.IlnessDate >= filterViewModel.IlnessDate
-                    && c.RecoveryDate <= filterViewModel.RecoveryDate).ToList();
+                    .Where(c => c.IllnessDate >= ilnessDate
+                    && c.IllnessDate <= recoveryDate).ToList();
             }
             else if (isValid && certificates.Count == 0)
             {
@@ -425,6 +427,86 @@ namespace StudentMedicalCertificateSystem.Controllers
         public IActionResult ImageView(string imagePath)
         {
             return View("ImageView", imagePath);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DownloadExcelReport()
+        {
+            var certificates = await _certificateRepository.GetAllIncludedAsync();
+            var stream = GenerateExcel(certificates);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "report.xlsx");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DownloadFilteredExcelReport(string studentData = null, DateTime? illnessDate = null, DateTime? recoveryDate = null)
+        {
+            var filteredCertificates = await GetFilteredCertificates(new FilterCertificatesViewModel
+            {
+                StudentData = studentData,
+                IllnessDate = illnessDate,
+                RecoveryDate = recoveryDate
+            });
+            filteredCertificates.Reverse();
+            var stream = GenerateExcel(filteredCertificates);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "filtered_report.xlsx");
+        }
+
+        private MemoryStream GenerateExcel(IEnumerable<MedicalCertificate> certificates)
+        {
+            var stream = new MemoryStream();
+
+            using (var spreadsheetDocument = SpreadsheetDocument.Create(stream, SpreadsheetDocumentType.Workbook))
+            {
+                var workbookPart = spreadsheetDocument.AddWorkbookPart();
+                workbookPart.Workbook = new Workbook();
+
+                var worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                worksheetPart.Worksheet = new Worksheet(new SheetData());
+
+                var sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new Sheets());
+                var sheet = new Sheet { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Справки" };
+                sheets.Append(sheet);
+
+                var sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+
+                // Заголовки столбцов
+                var headerRow = new Row();
+                headerRow.Append(
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Номер заявки") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Фамилия") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Имя") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Отчество") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Группа") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Клиника") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Диагноз") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Болел с ") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Болел по") }
+                // Добавьте остальные заголовки столбцов
+                );
+                sheetData.AppendChild(headerRow);
+
+                // Данные из модели
+                foreach (var certificate in certificates)
+                {
+                    var dataRow = new Row();
+                    dataRow.Append(
+                        new Cell() { DataType = CellValues.Number, CellValue = new CellValue(certificate.CertificateID.ToString()) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Student.LastName) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Student.FirstName) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Student.Patronymic) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Student.Group.GroupName) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Clinic.ClinicName) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Diagnosis.DiagnosisName) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.IllnessDate.ToString("dd.MM.yyyy")) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.RecoveryDate.ToString("dd.MM.yyyy")) }
+                    // Добавьте остальные данные справок
+                    );
+                    sheetData.AppendChild(dataRow);
+                }
+            }
+
+            stream.Position = 0;
+            return stream;
         }
     }
 }

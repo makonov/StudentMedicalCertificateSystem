@@ -71,7 +71,7 @@ namespace StudentMedicalCertificateSystem.Repository
 
         public async Task<List<SelectListItem>> GetStudentFullNamesWithGroupsAsSelectedList()
         {
-            return await _context.Students.Include(s => s.Group).Select(s => new SelectListItem { Value = $"{s.LastName} {s.FirstName} {s.Patronymic}", Text = $"{s.LastName} {s.FirstName} {s.Patronymic} -- {s.Group.GroupName}" }).ToListAsync();
+            return await _context.Students.Include(s => s.Group).Select(s => new SelectListItem { Value = $"{s.LastName} {s.FirstName} {s.Patronymic}", Text = $"{s.LastName} {s.FirstName} {s.Patronymic} - {s.Group.GroupName}" }).ToListAsync();
         }
 
         public async Task<Student> GetIncludedByIdAsync(int id)

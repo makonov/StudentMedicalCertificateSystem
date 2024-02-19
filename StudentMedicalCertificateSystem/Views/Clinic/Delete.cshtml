@@ -1,0 +1,55 @@
+﻿@model StudentMedicalCertificateSystem.Models.Clinic
+<div class="container">
+    <h2>Подтверждение удаления</h2>
+
+    <div>
+        <h4>Вы уверены, что хотите удалить эту больницу?</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-2">
+                ID больницы
+            </dt>
+            <dd class="col-sm-10">
+                @Model.ClinicID
+            </dd>
+
+            <dt class="col-sm-2">
+                Наименование больницы
+            </dt>
+            <dd class="col-sm-10">
+                @Model.ClinicName
+            </dd>
+        </dl>
+
+        <br />
+
+        <form asp-action="Delete" method="post">
+            @Html.AntiForgeryToken()
+            <div class="form-actions no-color">
+                <input type="hidden" asp-for="ClinicID" />
+                <input type="submit" value="Удалить" class="btn btn-danger" />
+                <a asp-action="Index" class="btn btn-secondary">Отменить</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    dl.row {
+        width: 100%;
+        margin: 0;
+        border-spacing: 0;
+        border-collapse: separate;
+    }
+
+    dt {
+        display: table-cell;
+        padding: 10px;
+        border: 1px solid #dee2e6;
+    }
+
+    dt {
+        font-weight: bold;
+    }
+
+</style>

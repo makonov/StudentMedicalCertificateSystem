@@ -7,5 +7,6 @@ namespace StudentMedicalCertificateSystem.Models
         [Key]
         public int DiagnosisID { get; set; }
         public string? DiagnosisName { get; set; }
+        public string? Code { get; set; }
     }
 }

@@ -6,7 +6,7 @@ namespace StudentMedicalCertificateSystem.ViewModels
     {
         public string StudentData { get; set; }
         [DataType(DataType.Date)]
-        public DateTime? IlnessDate { get; set; }
+        public DateTime? IllnessDate { get; set; }
         [DataType(DataType.Date)]
         public DateTime? RecoveryDate { get; set; }
     }

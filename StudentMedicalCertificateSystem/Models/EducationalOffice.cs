@@ -6,6 +6,7 @@ namespace StudentMedicalCertificateSystem.Models
     {
         [Key]
         public int OfficeID { get; set; }
+        [Required(ErrorMessage = "Необходимо ввести наименование учебного офиса")]
         public string? OfficeName { get; set; }
     }
 }

@@ -27,7 +27,7 @@ namespace StudentMedicalCertificateSystem.Models
         public string? CertificatePath { get; set; }
 
         [Required(ErrorMessage = "Дата начала болезни обязательна"), DataType(DataType.Date)]
-        public DateTime IlnessDate { get; set; }
+        public DateTime IllnessDate { get; set; }
 
         [Required(ErrorMessage = "Дата выздоровления обязательна"), DataType(DataType.Date)]
         public DateTime RecoveryDate { get; set; }

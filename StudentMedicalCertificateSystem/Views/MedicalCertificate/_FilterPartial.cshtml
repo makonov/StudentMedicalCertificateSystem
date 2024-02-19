@@ -1,21 +1,14 @@
 ﻿@model StudentMedicalCertificateSystem.ViewModels.FilterCertificatesViewModel
 
-<!-- Подключение Bootstrap CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-
-<!-- Подключение Bootstrap-select CSS и JS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
-
 @section Scripts {
-    <!-- Инициализация Bootstrap-select -->
-    <script>
-        $(document).ready(function () {
-            $('.selectpicker').selectpicker();
-        });
-    </script>
+    <!-- Подключение Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <!-- Подключение Bootstrap-select CSS и JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
 }
 
 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -30,8 +23,8 @@
 
         <form asp-action="Filter" method="post" enctype="multipart/form-data">
             <div class="form-group date-range">
-                <label asp-for="IlnessDate" class="control-label" style="margin-right: 10px;">Период с</label>
-                <input asp-for="IlnessDate" class="form-control" />
+                <label asp-for="IllnessDate" class="control-label" style="margin-right: 10px;">Период с</label>
+                <input asp-for="IllnessDate" class="form-control" />
 
                 <label asp-for="RecoveryDate" class="control-label" style="margin-right: 10px; margin-left: 10px;">по</label>
                 <input asp-for="RecoveryDate" class="form-control" />

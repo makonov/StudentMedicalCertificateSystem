@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Справочник";
+}
+
+<div class="container mt-5">
+    <h1>@ViewData["Title"]</h1>
+
+    <div class="list-group mt-4">
+        <a asp-controller="Student" asp-action="Index" class="list-group-item list-group-item-action">Студенты</a>
+        <a asp-controller="EducationalOffice" asp-action="Index" class="list-group-item list-group-item-action">Учебные офисы</a>
+        <a asp-controller="StudentGroup" asp-action="Index" class="list-group-item list-group-item-action">Студенческие группы</a>
+        <a asp-controller="Clinic" asp-action="Index" class="list-group-item list-group-item-action">Больницы</a>
+        <a asp-controller="Diagnosis" asp-action="Index" class="list-group-item list-group-item-action">Диагнозы</a>
+    </div>
+</div>
