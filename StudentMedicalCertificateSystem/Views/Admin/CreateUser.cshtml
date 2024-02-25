@@ -69,18 +69,6 @@
                         </div>
 
                         <div class="form-group">
-                            <label asp-for="OfficeID" class="control-label">Выберите учебный офис</label>
-                            <select asp-for="OfficeID" з class="form-control selectpicker" data-live-search="true">
-                                <option value="">Выберите офис</option>
-                                @foreach (var office in ViewBag.OfficeList)
-                                {
-                                    <option value="@office.Value">@office.Text</option>
-                                }
-                            </select>
-                            <span asp-validation-for="OfficeID" class="text-danger"></span>
-                        </div>
-
-                        <div class="form-group">
                             <label asp-for="UserRole" class="control-label">Роль</label>
                             @foreach (IdentityRole role in Model.AllRoles)
                             {

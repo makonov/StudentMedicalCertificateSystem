@@ -15,15 +15,11 @@ namespace StudentMedicalCertificateSystem.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly ApplicationDbContext _context;
-        private readonly IEducationalProgramRepository _officeRepository;
 
         public AdminController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context, IEducationalProgramRepository officeRepository)
         {
-            _context = context;
             _roleManager = roleManager;
             _userManager = userManager;
-            _officeRepository = officeRepository;
         }
 
         public IActionResult Index()
@@ -94,8 +90,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 UserName = createUserViewModel.UserName,
                 LastName = createUserViewModel.LastName,
                 FirstName = createUserViewModel.FirstName,
-                Patronymic = createUserViewModel.Patronymic,
-                OfficeID = (int) createUserViewModel.OfficeID
+                Patronymic = createUserViewModel.Patronymic
             };
 
             var newUserResponse = await _userManager.CreateAsync(newUser, createUserViewModel.Password);

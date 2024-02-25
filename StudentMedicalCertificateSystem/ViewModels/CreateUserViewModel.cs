@@ -22,8 +22,6 @@ namespace StudentMedicalCertificateSystem.ViewModels
         public string FirstName { get; set; }
         [Required(ErrorMessage = "Введите отчество")]
         public string Patronymic {  get; set; }
-        [Required(ErrorMessage = "Необходимо выбрать учебный офис")]
-        public int? OfficeID { get; set; }
         public List<IdentityRole> AllRoles { get; set; }
         [MinLength(1, ErrorMessage = "Необходимо выбрать хотя бы одну роль")]
         public string UserRole { get; set; }
