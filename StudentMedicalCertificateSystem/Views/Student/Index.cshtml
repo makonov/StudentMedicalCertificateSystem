@@ -12,7 +12,7 @@
     {
         <table>
             <thead>
-            <th>ID студента</th>
+            <th>ID</th>
             <th>Фамилия</th>
             <th>Имя</th>
             <th>Отчество</th>
@@ -31,7 +31,7 @@
                         <td>@student.FirstName</td>
                         <td>@student.Patronymic</td>
                         <td>@student.Group.GroupName</td>
-                        <td>@student.Office.OfficeName</td>
+                        <td>@student.Group.Program.ProgramName</td>
                         <td>@student.Course</td>
                         <td>@student.BirthDate.ToString("dd.MM.yyyy")</td>
                         <td>

@@ -13,7 +13,8 @@ namespace StudentMedicalCertificateSystem.ViewModels
         public int? ClinicID { get; set; }
         [Required(ErrorMessage = "Необходимо выбрать диагноз")]
         public int? DiagnosisID { get; set; }
-        public string? CertificatePath { get; set; }
+        [Required(ErrorMessage = "Выберите файл в формате jpg, jpeg, png или pdf.")]
+        public IFormFile Image { get; set; }
         [Required(ErrorMessage = "Необходимо выбрать дату начала болезни"), DataType(DataType.Date)]
         public DateTime? IlnessDate { get; set; }
         [Required(ErrorMessage = "Необходимо выьрать дату конца болезни"), DataType(DataType.Date)]

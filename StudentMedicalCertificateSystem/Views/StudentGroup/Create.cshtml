@@ -25,9 +25,21 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                         <div class="form-group">
-                            <label asp-for="GroupName" class="control-label">Введите название офиса</label>
+                            <label asp-for="GroupName" class="control-label">Введите наименование группы</label>
                             <input asp-for="GroupName" class="form-control" />
                             <span asp-validation-for="GroupName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ProgramID" class="control-label">Выберите образовательную программу</label>
+                            <select id="studentSelect" asp-for="ProgramID" class="form-control selectpicker" data-live-search="true">
+                                <option value="">Выберите программу</option>
+                                @foreach (var program in ViewBag.ProgramList)
+                                {
+                                    <option value="@program.Value">@program.Text</option>
+                                }
+                            </select>
+                            <span asp-validation-for="ProgramID" class="text-danger"></span>
                         </div>
 
                         <div class="form-group">

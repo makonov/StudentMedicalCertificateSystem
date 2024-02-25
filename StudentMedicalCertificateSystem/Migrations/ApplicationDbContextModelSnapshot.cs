@@ -191,21 +191,21 @@ namespace StudentMedicalCertificateSystem.Migrations
                     b.ToTable("Diagnoses");
                 });
 
-            modelBuilder.Entity("StudentMedicalCertificateSystem.Models.EducationalOffice", b =>
+            modelBuilder.Entity("StudentMedicalCertificateSystem.Models.EducationalProgram", b =>
                 {
-                    b.Property<int>("OfficeID")
+                    b.Property<int>("ProgramID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OfficeID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProgramID"));
 
-                    b.Property<string>("OfficeName")
+                    b.Property<string>("ProgramName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("OfficeID");
+                    b.HasKey("ProgramID");
 
-                    b.ToTable("EducationalOffices");
+                    b.ToTable("EducationalPrograms");
                 });
 
             modelBuilder.Entity("StudentMedicalCertificateSystem.Models.MedicalCertificate", b =>
@@ -243,6 +243,9 @@ namespace StudentMedicalCertificateSystem.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserID")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("CertificateID");
 
                     b.HasIndex("ClinicID");
@@ -250,6 +253,8 @@ namespace StudentMedicalCertificateSystem.Migrations
                     b.HasIndex("DiagnosisID");
 
                     b.HasIndex("StudentID");
+
+                    b.HasIndex("UserID");
 
                     b.ToTable("MedicalCertificates");
                 });
@@ -279,9 +284,6 @@ namespace StudentMedicalCertificateSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("OfficeID")
-                        .HasColumnType("int");
-
                     b.Property<string>("Patronymic")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -289,8 +291,6 @@ namespace StudentMedicalCertificateSystem.Migrations
                     b.HasKey("StudentID");
 
                     b.HasIndex("GroupID");
-
-                    b.HasIndex("OfficeID");
 
                     b.ToTable("Students");
                 });
@@ -307,7 +307,12 @@ namespace StudentMedicalCertificateSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ProgramID")
+                        .HasColumnType("int");
+
                     b.HasKey("GroupID");
+
+                    b.HasIndex("ProgramID");
 
                     b.ToTable("StudentGroups");
                 });
@@ -386,8 +391,6 @@ namespace StudentMedicalCertificateSystem.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.HasIndex("OfficeID");
-
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
@@ -462,11 +465,17 @@ namespace StudentMedicalCertificateSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("StudentMedicalCertificateSystem.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID");
+
                     b.Navigation("Clinic");
 
                     b.Navigation("Diagnosis");
 
                     b.Navigation("Student");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("StudentMedicalCertificateSystem.Models.Student", b =>
@@ -477,26 +486,18 @@ namespace StudentMedicalCertificateSystem.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("StudentMedicalCertificateSystem.Models.EducationalOffice", "Office")
-                        .WithMany()
-                        .HasForeignKey("OfficeID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Group");
-
-                    b.Navigation("Office");
                 });
 
-            modelBuilder.Entity("StudentMedicalCertificateSystem.Models.User", b =>
+            modelBuilder.Entity("StudentMedicalCertificateSystem.Models.StudentGroup", b =>
                 {
-                    b.HasOne("StudentMedicalCertificateSystem.Models.EducationalOffice", "Office")
+                    b.HasOne("StudentMedicalCertificateSystem.Models.EducationalProgram", "Program")
                         .WithMany()
-                        .HasForeignKey("OfficeID")
+                        .HasForeignKey("ProgramID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Office");
+                    b.Navigation("Program");
                 });
 #pragma warning restore 612, 618
         }

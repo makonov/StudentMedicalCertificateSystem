@@ -38,7 +38,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return await _context.Students
                 .OrderByDescending(s => s.StudentID)
                 .Include(s => s.Group)
-                .Include(s => s.Office)
+                .Include(s => s.Group.Program)
                 .ToListAsync();
         }
 
@@ -78,7 +78,7 @@ namespace StudentMedicalCertificateSystem.Repository
         {
             return await _context.Students
                 .Include(s => s.Group)
-                .Include(s => s.Office)
+                .Include(s => s.Group.Program)
                 .FirstOrDefaultAsync(s => s.StudentID == id);
         }
 
@@ -86,7 +86,7 @@ namespace StudentMedicalCertificateSystem.Repository
         {
             return await _context.Students
                 .Include(s => s.Group)
-                .Include(s => s.Office)
+                .Include(s => s.Group.Program)
                 .SingleOrDefaultAsync(s => s.LastName == lastName 
                 && s.FirstName == firstName
                 && s.Patronymic == patronymic 
@@ -103,7 +103,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return await _context.Students
             .OrderByDescending(s => s.StudentID)
             .Include(s => s.Group)
-            .Include(s => s.Office)
+            .Include(s => s.Group.Program)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

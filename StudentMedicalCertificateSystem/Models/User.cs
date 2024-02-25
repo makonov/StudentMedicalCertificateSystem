@@ -8,7 +8,6 @@ namespace StudentMedicalCertificateSystem.Models
     {
         [ForeignKey("EducationalOffice")]
         public int OfficeID { get; set; }
-        public virtual EducationalOffice? Office { get; set; }
 
         public string? LastName { get; set; }
         public string? FirstName { get; set; }

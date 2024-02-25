@@ -12,9 +12,6 @@ namespace StudentMedicalCertificateSystem.Models
         public int GroupID { get; set; }
         public virtual StudentGroup? Group { get; set; }
 
-        [ForeignKey("EducationalOffice")]
-        public int OfficeID { get; set; }
-        public virtual EducationalOffice? Office { get; set; }
         
         [Required(ErrorMessage = "Поле 'Фамилия' обязательно для заполнения")]
         public string? LastName { get; set; }

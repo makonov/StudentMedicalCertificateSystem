@@ -1,0 +1,68 @@
+﻿@model IEnumerable<StudentMedicalCertificateSystem.Models.EducationalProgram>
+
+@{
+    ViewData["Title"] = "Образовательные программы";
+}
+
+<div class="container">
+    <div>
+        <a class="btn btn-sm btn-primary" href="@Url.Action("Create")">Добавить новую программу</a>
+    </div>
+    
+    @if (TempData["Error"] != null)
+    {
+        <div class="col-md-12 alert alert-danger" style="margin-top: 20px;">
+            <span><b>Извините!</b> - @TempData["Error"]</span>
+        </div>
+    }
+
+    <div style="margin-top: 20px;">
+        @if (Model.Count() != 0)
+        {
+            <table>
+                <thead>
+                <th>Наименование программы</th>
+                <th>Действия</th>
+                </thead>
+                <tbody>
+                    @foreach (var program in Model)
+                    {
+                        <tr>
+                            <td>@program.ProgramName</td>
+                            <td>
+                                <a asp-controller="EducationalProgram" asp-action="Edit" asp-route-id="@program.ProgramID" class="btn btn-sm btn-secondary">Редактировать</a>
+                                <a asp-controller="EducationalProgram" asp-action="Delete" asp-route-id="@program.ProgramID" class="btn btn-sm btn-danger">Удалить</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>Увы, но ничего не найдено</p>
+        }
+    </div>  
+</div>
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    td:nth-child(3) {
+        white-space: nowrap;
+    }
+
+</style>

@@ -8,8 +8,6 @@ namespace StudentMedicalCertificateSystem.ViewModels
     {
         [Required(ErrorMessage = "Поле 'Группа' обязательно для заполнения")]
         public int? GroupID { get; set; }
-        [Required(ErrorMessage = "Поле 'Учебный офис' обязательно для заполнения")]
-        public int? OfficeID { get; set; }
 
         [Required(ErrorMessage = "Поле 'Фамилия' обязательно для заполнения")]
         public string? LastName { get; set; }

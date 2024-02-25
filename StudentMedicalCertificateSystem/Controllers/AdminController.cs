@@ -16,9 +16,9 @@ namespace StudentMedicalCertificateSystem.Controllers
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _context;
-        private readonly IEducationalOfficeRepository _officeRepository;
+        private readonly IEducationalProgramRepository _officeRepository;
 
-        public AdminController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context, IEducationalOfficeRepository officeRepository)
+        public AdminController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context, IEducationalProgramRepository officeRepository)
         {
             _context = context;
             _roleManager = roleManager;
@@ -55,14 +55,8 @@ namespace StudentMedicalCertificateSystem.Controllers
             {
                 AllRoles = allRoles
             };
-            ViewBag.OfficeList = new SelectList(await GetOffices(), "Value", "Text");
-            return View(response);
-        }
 
-        private async Task<List<SelectListItem>> GetOffices()
-        {
-            // Здесь получаем список офисов из базы данных
-            return await _officeRepository.GetOfficesAsSelectList();
+            return View(response);
         }
 
         [HttpPost]
@@ -71,7 +65,6 @@ namespace StudentMedicalCertificateSystem.Controllers
             if (!ModelState.IsValid) 
             {
                 TempData["Error"] = "Ошибка";
-                ViewBag.OfficeList = new SelectList(await GetOffices(), "Value", "Text");
                 createUserViewModel.AllRoles = _roleManager.Roles.ToList();
                 return View(createUserViewModel);
             } 
@@ -80,7 +73,6 @@ namespace StudentMedicalCertificateSystem.Controllers
             if (user != null)
             {
                 TempData["Error"] = "Пользователь с данным именем уже существует";
-                ViewBag.OfficeList = new SelectList(await GetOffices(), "Value", "Text");
                 createUserViewModel.AllRoles = _roleManager.Roles.ToList();
                 return View(createUserViewModel);
             }
@@ -93,7 +85,6 @@ namespace StudentMedicalCertificateSystem.Controllers
                 TempData["Error"] = "Пароль не соответствует требованиям безопасности." +
                     " Минимальная длина пароля - 6 символов, он должен содержать символы " +
                     "нижнего и верхнего регистра, цифры, а также специальные символы.";
-                ViewBag.OfficeList = new SelectList(await GetOffices(), "Value", "Text");
                 createUserViewModel.AllRoles = _roleManager.Roles.ToList();
                 return View(createUserViewModel);
             }
@@ -152,6 +143,33 @@ namespace StudentMedicalCertificateSystem.Controllers
             }
 
             return NotFound();
+        }
+
+        public async Task<IActionResult> Delete(string userId)
+        {
+            User user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                return View(user);
+            }
+
+            return NotFound();
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string Id)
+        {
+            User? user = await _userManager.FindByIdAsync(Id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            await _userManager.DeleteAsync(user);
+
+            return RedirectToAction("Index");
         }
     }
 }

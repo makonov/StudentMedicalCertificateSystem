@@ -16,17 +16,11 @@ namespace StudentMedicalCertificateSystem.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Student>()
-                .HasOne(s => s.Office)
+            modelBuilder.Entity<StudentGroup>()
+                .HasOne(g => g.Program)
                 .WithMany()
-                .HasForeignKey(s => s.OfficeID)
-                .OnDelete(DeleteBehavior.Restrict); 
-
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.Office)
-                .WithMany()
-                .HasForeignKey(u => u.OfficeID)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .HasForeignKey(g => g.ProgramID)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Student>()
                 .HasOne(s => s.Group)
@@ -50,7 +44,7 @@ namespace StudentMedicalCertificateSystem.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<StudentGroup> StudentGroups { get; set; }
-        public DbSet<EducationalOffice> EducationalOffices { get; set; }
+        public DbSet<EducationalProgram> EducationalPrograms { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Diagnosis> Diagnoses { get; set; }
         public DbSet<Clinic> Clinics { get; set; }

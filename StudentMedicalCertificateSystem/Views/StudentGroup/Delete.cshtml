@@ -7,17 +7,17 @@
         <hr />
         <dl class="row">
             <dt class="col-sm-2">
-                ID группы
-            </dt>
-            <dd class="col-sm-10">
-                @Model.GroupID
-            </dd>
-
-            <dt class="col-sm-2">
                 Наименование группы
             </dt>
             <dd class="col-sm-10">
                 @Model.GroupName
+            </dd>
+
+            <dt class="col-sm-2">
+                Образовательная программа
+            </dt>
+            <dd class="col-sm-10">
+                @Model.Program.ProgramName
             </dd>
         </dl>
 

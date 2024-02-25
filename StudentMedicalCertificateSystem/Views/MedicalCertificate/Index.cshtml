@@ -22,7 +22,7 @@
     {
         if (model.FilterViewModel != null)
         {
-            return Url.Action("Filter", new { page = page, studentData = model.FilterViewModel.StudentData, illnessDate = model.FilterViewModel.IllnessDate, recoveryDate = model.FilterViewModel.RecoveryDate });
+            return Url.Action("Filter", new { page = page, studentData = model.FilterViewModel.StudentData, programId = model.FilterViewModel.ProgramID, illnessDate = model.FilterViewModel.IllnessDate, recoveryDate = model.FilterViewModel.RecoveryDate });
         }
         else
         {
@@ -34,7 +34,7 @@
     {
         if (model.FilterViewModel != null)
         {
-            return Url.Action("DownloadFilteredExcelReport", new { studentData = model.FilterViewModel.StudentData, illnessDate = model.FilterViewModel.IllnessDate, recoveryDate = model.FilterViewModel.RecoveryDate });
+            return Url.Action("DownloadFilteredExcelReport", new { studentData = model.FilterViewModel.StudentData, programId = model.FilterViewModel.ProgramID, illnessDate = model.FilterViewModel.IllnessDate, recoveryDate = model.FilterViewModel.RecoveryDate });
         }
         else
         {
@@ -47,8 +47,8 @@
     @if (User.IsInRole(UserRoles.User) || User.IsInRole(UserRoles.Admin))
     {
         <a class="btn btn-sm btn-primary" href="@Url.Action("Create")">Добавить новую справку</a>
-    }
-    <a class="btn btn-sm btn-primary" href="@GetDownloadingUrl(Model)">Скачать отчет</a>
+        <a class="btn btn-sm btn-primary" href="@GetDownloadingUrl(Model)">Скачать отчет</a>
+    } 
     <br />
 
     @await Html.PartialAsync("_FilterPartial", new StudentMedicalCertificateSystem.ViewModels.FilterCertificatesViewModel())
@@ -56,7 +56,7 @@
     {
         <table>
             <thead>
-            <th>ID справки</th>
+            <th>ID</th>
             <th>Студент</th>
             <th>Группа</th>
             <th>Больница</th>
@@ -101,6 +101,16 @@
                                         <p><strong>Больница:</strong> @certificate.Clinic.ClinicName</p>
                                         <p><strong>Диагноз:</strong> @certificate.Diagnosis.DiagnosisName @certificate.Diagnosis.Code</p>
                                         <p><strong>Период болезни:</strong> с @certificate.IllnessDate.ToString("dd.MM.yyyy") по @certificate.RecoveryDate.ToString("dd.MM.yyyy")</p>
+                                        <p><strong>Сотрудник:</strong>
+                                            @if(certificate.User != null)
+                                            {
+                                                <span>@certificate.User.LastName @certificate.User.FirstName @certificate.User.Patronymic</span>
+                                            }
+                                            else
+                                            {
+                                                <span>нет</span>
+                                            }
+                                        </p> 
                                         <p><strong>Комментарий:</strong> 
                                             @if (!string.IsNullOrEmpty(certificate.Answer))
                                             {

@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Drawing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StudentMedicalCertificateSystem.Interfaces;
 using StudentMedicalCertificateSystem.Models;
@@ -11,11 +12,14 @@ namespace StudentMedicalCertificateSystem.Controllers
     public class StudentGroupController : Controller
     {
         private readonly IStudentGroupRepository _groupRepository;
+        private readonly IEducationalProgramRepository _programRepository;
         private const int PageSize = 20;
 
-        public StudentGroupController(IStudentGroupRepository groupRepository)
+        public StudentGroupController(IStudentGroupRepository groupRepository,
+            IEducationalProgramRepository programRepository)
         {
             _groupRepository = groupRepository;
+            _programRepository = programRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -24,9 +28,15 @@ namespace StudentMedicalCertificateSystem.Controllers
             return View(groups);
         }
 
-        public IActionResult Create()
+        private async Task<List<SelectListItem>> GetPrograms()
+        {
+            return await _programRepository.GetProgramsAsSelectList();
+        }
+
+        public async Task<IActionResult> Create()
         {
             var group = new StudentGroup();
+            ViewBag.ProgramList = new SelectList(await GetPrograms(), "Value", "Text");
             return View(group);
         }
 
@@ -37,6 +47,7 @@ namespace StudentMedicalCertificateSystem.Controllers
             if (!ModelState.IsValid)
             {
                 ModelState.AddModelError("", "Произошла ошибка");
+                ViewBag.ProgramList = new SelectList(await GetPrograms(), "Value", "Text");
                 return View(group);
             }
 
@@ -54,6 +65,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 return NotFound();
             }
 
+            ViewBag.ProgramList = new SelectList(await GetPrograms(), "Value", "Text");
             return View(group);
         }
 
@@ -63,12 +75,14 @@ namespace StudentMedicalCertificateSystem.Controllers
             if (!ModelState.IsValid)
             {
                 ModelState.AddModelError("", "Произошла ошибка");
+                ViewBag.ProgramList = new SelectList(await GetPrograms(), "Value", "Text");
                 return View(group);
             }
 
             var updatedGroup = new StudentGroup
             {
                 GroupID = id,
+                ProgramID = group.ProgramID,
                 GroupName = group.GroupName
             };
 

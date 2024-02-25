@@ -22,6 +22,7 @@
             <table>
                 <thead>
                 <th>Наименование группы</th>
+                <th>Образовательная программа</th>
                 <th>Действия</th>
                 </thead>
                 <tbody>
@@ -29,6 +30,7 @@
                     {
                         <tr>
                             <td>@group.GroupName</td>
+                            <td>@group.Program.ProgramName</td>
                             <td>
                                 <a asp-controller="StudentGroup" asp-action="Edit" asp-route-id="@group.GroupID" class="btn btn-sm btn-secondary">Редактировать</a>
                                 <a asp-controller="StudentGroup" asp-action="Delete" asp-route-id="@group.GroupID" class="btn btn-sm btn-danger">Удалить</a>

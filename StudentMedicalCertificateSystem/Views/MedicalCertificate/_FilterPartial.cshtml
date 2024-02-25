@@ -43,6 +43,18 @@
             </div>
 
             <div class="form-group">
+                <label asp-for="ProgramID" class="control-label">Выберите образовательную программу</label>
+                <select asp-for="ProgramID" class="form-control selectpicker" data-live-search="true">
+                    <option value="">Выберите программу</option>
+                    @foreach (var program in ViewBag.ProgramList)
+                    {
+                        <option value="@program.Value">@program.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="ProgramID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
                 <button type="submit" class="btn btn-primary">Поиск</button>
             </div>
         </form>

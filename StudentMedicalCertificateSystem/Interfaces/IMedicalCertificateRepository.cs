@@ -10,6 +10,7 @@ namespace StudentMedicalCertificateSystem.Interfaces
         Task<List<MedicalCertificate>> GetAllIncludedAsync();
         Task<MedicalCertificate> GetByIdAsync(int id);
         Task<MedicalCertificate> GetIncludedByIdAsync(int id);
+        Task<List<MedicalCertificate>> GetAllByProgramIdAsync(int id);
         Task<List<MedicalCertificate>> GetAllSortedAndIncludedByStudentIdAsync(int id);
         Task<List<MedicalCertificate>> GetSortedAndIncludedFromList(List<MedicalCertificate> list);
         Task<List<MedicalCertificate>> GetAllByStudentId(int studentId);
@@ -18,7 +19,7 @@ namespace StudentMedicalCertificateSystem.Interfaces
         Task<List<MedicalCertificate>> GetPagedCertificatesFromList(List<MedicalCertificate> certificates, int page, int pageSize);
         bool Add(MedicalCertificate certificate);
         bool Update(MedicalCertificate certificate);
-        Task UpdateByAnotherCertificateValues(MedicalCertificate certificateToUpdate, MedicalCertificate updatedCertificate);
+        bool UpdateByAnotherCertificateValues(MedicalCertificate certificateToUpdate, MedicalCertificate updatedCertificate);
         bool Delete(MedicalCertificate certificate);
         bool Save();
     }

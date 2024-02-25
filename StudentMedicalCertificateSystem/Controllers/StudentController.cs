@@ -14,21 +14,22 @@ namespace StudentMedicalCertificateSystem.Controllers
     {
         private readonly IStudentRepository _studentRepository;
         private readonly IStudentGroupRepository _groupRepository;
-        private readonly IEducationalOfficeRepository _officeRepository;
+        private readonly IEducationalProgramRepository _programRepository;
         private const int PageSize = 10;
 
         public StudentController(IStudentRepository studentRepository,
             IStudentGroupRepository groupRepository,
-            IEducationalOfficeRepository officeRepository)
+            IEducationalProgramRepository programRepository)
         {
             _studentRepository = studentRepository;
             _groupRepository = groupRepository;
-            _officeRepository = officeRepository;
+            _programRepository = programRepository;
         }
 
         public async Task<IActionResult> Index(int page = 1)
         {
             ViewBag.StudentList = new SelectList(await GetStudents(), "Value", "Text");
+     
 
             var totalCount = await _studentRepository.Count();
             var totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
@@ -54,9 +55,9 @@ namespace StudentMedicalCertificateSystem.Controllers
             return await _groupRepository.GetGroupsAsSelectList();
         }
 
-        private async Task<List<SelectListItem>> GetOffices()
+        private async Task<List<SelectListItem>> GetPrograms()
         {
-            return await _officeRepository.GetOfficesAsSelectList();
+            return await _programRepository.GetProgramsAsSelectList();
         }
 
         private async Task<List<SelectListItem>> GetStudents()
@@ -67,7 +68,6 @@ namespace StudentMedicalCertificateSystem.Controllers
         public async Task MakeLists()
         {
             ViewBag.GroupList = new SelectList(await GetGroups(), "Value", "Text");
-            ViewBag.OfficeList = new SelectList(await GetOffices(), "Value", "Text");
         }
 
         public async Task<IActionResult> Create()
@@ -91,7 +91,6 @@ namespace StudentMedicalCertificateSystem.Controllers
             var student = new Student
             {
                 GroupID = (int)viewModel.GroupID,
-                OfficeID = (int)viewModel.OfficeID,
                 LastName = viewModel.LastName,
                 FirstName = viewModel.FirstName,
                 Patronymic = viewModel.Patronymic,
@@ -118,7 +117,6 @@ namespace StudentMedicalCertificateSystem.Controllers
             {
                 StudentID = student.StudentID,
                 GroupID = student.GroupID,
-                OfficeID = student.OfficeID,
                 LastName = student.LastName,
                 FirstName = student.FirstName,
                 Patronymic = student.Patronymic,
@@ -144,7 +142,6 @@ namespace StudentMedicalCertificateSystem.Controllers
             {
                 StudentID = id,
                 GroupID = (int)viewModel.GroupID,
-                OfficeID = (int)viewModel.OfficeID,
                 LastName = viewModel.LastName,
                 FirstName = viewModel.FirstName,
                 Patronymic = viewModel.Patronymic,

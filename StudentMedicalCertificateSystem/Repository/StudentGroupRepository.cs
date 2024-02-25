@@ -29,12 +29,16 @@ namespace StudentMedicalCertificateSystem.Repository
 
         public async Task<List<StudentGroup>> GetAllSorted()
         {
-            return await _context.StudentGroups.OrderBy(g => g.GroupName).ToListAsync();
+            return await _context.StudentGroups
+                .Include(g => g.Program)
+                .OrderBy(g => g.GroupName).ToListAsync();
         }
 
         public async Task<StudentGroup> GetByIdAsync(int id)
         {
-            return await _context.StudentGroups.FirstOrDefaultAsync(g => g.GroupID == id);
+            return await _context.StudentGroups
+                .Include(g => g.Program)
+                .FirstOrDefaultAsync(g => g.GroupID == id);
         }
 
         public async Task<List<SelectListItem>> GetGroupsAsSelectList()

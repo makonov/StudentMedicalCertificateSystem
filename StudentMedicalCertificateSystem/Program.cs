@@ -21,7 +21,7 @@ namespace StudentMedicalCertificateSystem
             builder.Services.AddScoped<IDiagnosisRepository, DiagnosisRepository>();
             builder.Services.AddScoped<IStudentRepository, StudentRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IEducationalOfficeRepository, EducationalOfficeRepository>();
+            builder.Services.AddScoped<IEducationalProgramRepository, EducationalProgramRepository>();
             builder.Services.AddScoped<IStudentGroupRepository, StudentGroupRepository>();
             builder.Services.AddScoped<IPhotoService, PhotoService>();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -41,10 +41,11 @@ namespace StudentMedicalCertificateSystem
 
             builder.Services.AddAuthorization(options =>
             {
-                options.AddPolicy("AdminPolicy", policy => policy.RequireRole("admin"));
-                options.AddPolicy("UserPolicy", policy => policy.RequireRole("user"));
-                options.AddPolicy("GuestPolicy", policy => policy.RequireRole("guest"));
-                options.AddPolicy("UserOrAdminPolicy", policy => policy.RequireRole("user", "admin"));
+                options.AddPolicy("AdminPolicy", policy => policy.RequireRole(UserRoles.Admin));
+                options.AddPolicy("UserPolicy", policy => policy.RequireRole(UserRoles.User));
+                options.AddPolicy("GuestPolicy", policy => policy.RequireRole(UserRoles.Guest));
+                options.AddPolicy("UserOrAdminPolicy", policy => policy.RequireRole(UserRoles.User, UserRoles.Admin));
+                options.AddPolicy("AllRolesPolicy", policy => policy.RequireRole(UserRoles.Guest, UserRoles.User, UserRoles.Admin));
             });
 
             var app = builder.Build();
@@ -72,7 +73,7 @@ namespace StudentMedicalCertificateSystem
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=MedicalCertificate}/{action=Index}/{id?}");
 
             app.MapControllerRoute(
                 name: "medicalCertificates",

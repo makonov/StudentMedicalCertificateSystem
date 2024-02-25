@@ -27,17 +27,16 @@ namespace StudentMedicalCertificateSystem.Data
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
 
                 // Users
-                string adminUserEmail = "teddysmithdeveloper@gmail.com";
+                string adminUserEmail = "admin@gmail.com";
                 var adminUser = await userManager.FindByEmailAsync(adminUserEmail);
 
                 if (adminUser == null)
                 {
                     var newAdminUser = new User()
                     {
-                        UserName = "valentina",
+                        UserName = "admin",
                         Email = adminUserEmail,
                         EmailConfirmed = true,
-                        OfficeID = 1,
                         FirstName = "TEST",
                         LastName = "TEST",
                         Patronymic = "TEST"
@@ -57,7 +56,6 @@ namespace StudentMedicalCertificateSystem.Data
                         UserName = "professor",
                         Email = appGuestEmail,
                         EmailConfirmed = true,
-                        OfficeID = 1,
                         FirstName = "TEST",
                         LastName = "TEST",
                         Patronymic = "TEST"
@@ -77,7 +75,6 @@ namespace StudentMedicalCertificateSystem.Data
                         UserName = "user",
                         Email = appUserEmail,
                         EmailConfirmed = true,
-                        OfficeID = 1,
                         FirstName = "TEST",
                         LastName = "TEST",
                         Patronymic = "TEST"

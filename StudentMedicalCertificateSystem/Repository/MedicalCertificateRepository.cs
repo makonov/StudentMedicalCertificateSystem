@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using StudentMedicalCertificateSystem.Data;
 using StudentMedicalCertificateSystem.Interfaces;
 using StudentMedicalCertificateSystem.Models;
+using System.Security.Claims;
 
 namespace StudentMedicalCertificateSystem.Repository
 {
@@ -10,10 +11,12 @@ namespace StudentMedicalCertificateSystem.Repository
     public class MedicalCertificateRepository : IMedicalCertificateRepository
     {
         private readonly ApplicationDbContext _context;
-        public MedicalCertificateRepository(ApplicationDbContext context) 
-        { 
+
+        public MedicalCertificateRepository(ApplicationDbContext context)
+        {
             _context = context;
         }
+
         public bool Add(MedicalCertificate certificate)
         {
             _context.Add(certificate);
@@ -39,6 +42,7 @@ namespace StudentMedicalCertificateSystem.Repository
             .Include(c => c.Student.Group)
             .Include(c => c.Clinic)
             .Include(c => c.Diagnosis)
+            .Include(c => c.User)
             .ToListAsync();
         }
 
@@ -55,6 +59,7 @@ namespace StudentMedicalCertificateSystem.Repository
                 .Include(c => c.Student.Group)
                 .Include (c => c.Clinic)
                 .Include(c => c.Diagnosis)
+                .Include(c => c.User)
                 .Where(c => c.IllnessDate >= startOfPeriod && c.IllnessDate <= endOfPeriod)
                 .ToListAsync();
         }
@@ -65,6 +70,7 @@ namespace StudentMedicalCertificateSystem.Repository
             .Include(c => c.Student)
             .Include(c => c.Clinic)
             .Include(c => c.Diagnosis)
+            .Include(c => c.User)
             .FirstOrDefaultAsync(c => c.CertificateID == id);
         }
 
@@ -76,6 +82,7 @@ namespace StudentMedicalCertificateSystem.Repository
              .Include(c => c.Student.Group)
              .Include(c => c.Clinic)
              .Include(c => c.Diagnosis)
+             .Include(c => c.User)
              .Where(c => c.StudentID == id)
              .ToListAsync();
         }
@@ -97,10 +104,10 @@ namespace StudentMedicalCertificateSystem.Repository
             return Save();
         }
 
-        public async Task UpdateByAnotherCertificateValues(MedicalCertificate certificateToUpdate, MedicalCertificate updatedCertificate)
+        public bool UpdateByAnotherCertificateValues(MedicalCertificate certificateToUpdate, MedicalCertificate updatedCertificate)
         {
             _context.Entry(certificateToUpdate).CurrentValues.SetValues(updatedCertificate);
-            await _context.SaveChangesAsync();
+            return Save();
         }
 
         public async Task<List<MedicalCertificate>> GetAllByStudentId(int studentId)
@@ -119,12 +126,13 @@ namespace StudentMedicalCertificateSystem.Repository
                 .Include(c => c.Student.Group)
                 .Include(c => c.Clinic)
                 .Include(c => c.Diagnosis)
+                .Include(c => c.User)
                 .ToListAsync();
         }
 
         public async Task<int> Count()
         {
-            return await _context.MedicalCertificates.CountAsync();
+            return await _context.MedicalCertificates.Include(c => c.Student).CountAsync();
         }
 
         public async Task<List<MedicalCertificate>> GetPagedCertificates(int page, int pageSize)
@@ -135,6 +143,7 @@ namespace StudentMedicalCertificateSystem.Repository
             .Include(c => c.Student.Group)
             .Include(c => c.Clinic)
             .Include(c => c.Diagnosis)
+            .Include(c => c.User)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -151,6 +160,7 @@ namespace StudentMedicalCertificateSystem.Repository
                 .Include(c => c.Student.Group)
                 .Include(c => c.Clinic)
                 .Include(c => c.Diagnosis)
+                .Include(c => c.User)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
@@ -165,7 +175,22 @@ namespace StudentMedicalCertificateSystem.Repository
             .Include(c => c.Student.Group)
             .Include(c => c.Clinic)
             .Include(c => c.Diagnosis)
+            .Include(c => c.User)
             .ToListAsync();
+        }
+
+        public async Task<List<MedicalCertificate>> GetAllByProgramIdAsync(int id)
+        {
+            return await _context.MedicalCertificates
+                .OrderByDescending(c => c.CertificateID)
+                .Include(c => c.Student)
+                .Include(c => c.Student.Group)
+                .Include(c => c.Student.Group.Program)
+                .Include(c => c.Clinic)
+                .Include(c => c.Diagnosis)
+                .Include(c => c.User)
+                .Where(c => c.Student.Group.ProgramID  == id)
+                .ToListAsync();
         }
     }
 }
