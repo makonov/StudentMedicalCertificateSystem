@@ -70,10 +70,13 @@ namespace StudentMedicalCertificateSystem.Controllers
             ViewBag.GroupList = new SelectList(await GetGroups(), "Value", "Text");
         }
 
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(bool isFromCertificate = false)
         {
             await MakeLists();
-            var viewModel = new CreateStudentViewModel();
+            var viewModel = new CreateStudentViewModel
+            {
+                IsFromCertificate = isFromCertificate
+            };
             return View(viewModel);
         }
 
@@ -100,7 +103,10 @@ namespace StudentMedicalCertificateSystem.Controllers
 
             _studentRepository.Add(student);
 
-            return RedirectToAction("Index");   
+            if (!viewModel.IsFromCertificate) 
+                return RedirectToAction("Index");
+            else
+                return RedirectToAction("Create","MedicalCertificate");
         }
 
         public async Task<IActionResult> Edit(int id)

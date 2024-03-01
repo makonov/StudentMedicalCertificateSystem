@@ -25,13 +25,18 @@ namespace StudentMedicalCertificateSystem.Models
         public int DiagnosisID { get; set; }
         public virtual Diagnosis? Diagnosis { get; set; }
 
+        public int? CertificateNumber { get; set; }
         public string? CertificatePath { get; set; }
+        public string? ClinicAnswerPath { get; set; }
+        public bool IsConfirmed { get; set; }
+        [DataType(DataType.Date)]
+        public DateTime? IssueDate { get; set; }
 
         [DataType(DataType.Date)]
-        public DateTime IllnessDate { get; set; }
+        public DateTime? IllnessDate { get; set; }
 
         [DataType(DataType.Date)]
-        public DateTime RecoveryDate { get; set; }
+        public DateTime? RecoveryDate { get; set; }
 
         public string? Answer {  get; set; }
 

@@ -139,11 +139,19 @@ namespace StudentMedicalCertificateSystem.Controllers
             {
                 certificateViewModel.StudentID = foundStudent.StudentID;
 
-                var uploadResult = await _photoService.UploadPhotoAsync(certificateViewModel.Image, "Certificates");
+                var imageUploadResult = await _photoService.UploadPhotoAsync(certificateViewModel.Image, "Certificates");
 
-                if (!uploadResult.IsUploadedAndExtensionValid)
+                if (!imageUploadResult.IsUploadedAndExtensionValid)
                 {
                     ModelState.AddModelError("Image", "Выберите файл в формате jpg, jpeg, png или pdf.");
+                    await MakeLists();
+                    return View(certificateViewModel);
+                }
+
+                var clinicAnswerUploadResult = await _photoService.UploadPhotoAsync(certificateViewModel.ClinicAnswer, "Confirmations");
+                if (certificateViewModel.ClinicAnswer != null && !clinicAnswerUploadResult.IsUploadedAndExtensionValid)
+                {
+                    ModelState.AddModelError("ClinicAnswer", "Выберите файл в формате jpg, jpeg, png или pdf.");
                     await MakeLists();
                     return View(certificateViewModel);
                 }
@@ -154,10 +162,14 @@ namespace StudentMedicalCertificateSystem.Controllers
                     ClinicID = (int)certificateViewModel.ClinicID,
                     DiagnosisID = (int)certificateViewModel.DiagnosisID,
                     UserID = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    CertificatePath = "/Certificates/" + uploadResult.FileName,
-                    IllnessDate = certificateViewModel.IlnessDate.HasValue ? certificateViewModel.IlnessDate.Value : default(DateTime),
-                    RecoveryDate = certificateViewModel.RecoveryDate.HasValue ? certificateViewModel.RecoveryDate.Value : default(DateTime),
+                    CertificatePath = "/Certificates/" + imageUploadResult.FileName,
+                    ClinicAnswerPath = clinicAnswerUploadResult.IsUploadedAndExtensionValid ? "/Confirmations/" + clinicAnswerUploadResult.FileName : null,
+                    CertificateNumber = certificateViewModel.CertificateNumber,
+                    IssueDate = certificateViewModel.IssueDate,
+                    IllnessDate = certificateViewModel.IlnessDate,
+                    RecoveryDate = certificateViewModel.RecoveryDate,
                     Answer = certificateViewModel.Answer,
+                    IsConfirmed = certificateViewModel.IsConfirmed,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 };
@@ -193,11 +205,15 @@ namespace StudentMedicalCertificateSystem.Controllers
                 StudentID = certificate.StudentID,
                 FullName = fullName,
                 ImagePath = certificate.CertificatePath,
+                ClinicAnswerPath = certificate.ClinicAnswerPath,
                 ClinicID = certificate.ClinicID,
                 DiagnosisID = certificate.DiagnosisID,
+                CertificateNumber = certificate.CertificateNumber,
+                IssueDate = certificate.IssueDate,
                 IlnessDate = certificate.IllnessDate,
                 RecoveryDate = certificate.RecoveryDate,
                 Answer = certificate.Answer,
+                IsConfirmed = certificate.IsConfirmed,
                 CreatedAt = certificate.CreatedAt
             };
 
@@ -219,7 +235,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
             string imagePath = string.Empty;
 
-            // Проверка на наличие и формат нового файла
+            // Проверка на наличие и формат нового файла справки
             if (certificateViewModel.Image != null)
             {
                 var replacementResult = await _photoService.ReplacePhotoAsync(certificateViewModel.Image, "Certificates", certificateViewModel.ImagePath);
@@ -239,6 +255,28 @@ namespace StudentMedicalCertificateSystem.Controllers
                 imagePath = certificateViewModel.ImagePath;
             }
 
+            string clinicAnswerPath = string.Empty;
+
+            // Проверка на наличие и формат файла ответа из больницы
+            if (certificateViewModel.ClinicAnswer != null)
+            {
+                var updateResult = await _photoService.ReplacePhotoAsync(certificateViewModel.ClinicAnswer, "Confirmations", certificateViewModel.ClinicAnswerPath);
+
+                if (!updateResult.IsReplacementSuccess)
+                {
+                    ModelState.AddModelError("Image", "Выберите файл в формате jpg, jpeg, png или pdf");
+                    await MakeLists();
+                    return View(certificateViewModel);
+                }
+
+                // Присвоение пути к новому файлу в модели
+                clinicAnswerPath = "/Confirmations/" + updateResult.NewFileName;
+            }
+            else
+            {
+                clinicAnswerPath = certificateViewModel.ClinicAnswerPath;
+            }
+
             var certificate = new MedicalCertificate
             {
                 CertificateID = certificateViewModel.CertificateID,
@@ -246,16 +284,25 @@ namespace StudentMedicalCertificateSystem.Controllers
                 ClinicID = (int)certificateViewModel.ClinicID,
                 DiagnosisID = (int)certificateViewModel.DiagnosisID,
                 CertificatePath = imagePath,
-                IllnessDate = certificateViewModel.IlnessDate.HasValue ? certificateViewModel.IlnessDate.Value : default(DateTime),
-                RecoveryDate = certificateViewModel.RecoveryDate.HasValue ? certificateViewModel.RecoveryDate.Value : default(DateTime),
+                ClinicAnswerPath= clinicAnswerPath,
+                CertificateNumber = certificateViewModel.CertificateNumber,
+                IssueDate = certificateViewModel.IssueDate,
+                IllnessDate = certificateViewModel.IlnessDate,
+                RecoveryDate = certificateViewModel.RecoveryDate,
                 UserID = User.FindFirstValue(ClaimTypes.NameIdentifier),
                 Answer = certificateViewModel.Answer,
+                IsConfirmed = certificateViewModel.IsConfirmed,
                 CreatedAt = certificateViewModel.CreatedAt,
                 UpdatedAt = DateTime.Now
             };
 
             _certificateRepository.Update(certificate);
             return RedirectToAction("Index");
+        }
+
+        public IActionResult CreateStudentAndReturn()
+        {
+            return RedirectToAction("Create", "Student", new { isFromCertificate = true });
         }
 
         [HttpPost]
@@ -423,6 +470,23 @@ namespace StudentMedicalCertificateSystem.Controllers
             return View("ImageView", imagePath);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> UpdateIsConfirmed(int certificateId, bool isChecked)
+        {
+            // Получите ваш сертификат по ID и обновите значение IsConfirmed
+            var certificate = await  _certificateRepository.GetByIdAsync(certificateId);
+            if (certificate != null)
+            {
+                certificate.IsConfirmed = isChecked;
+                _certificateRepository.Update(certificate);
+                return Json(new { success = true });
+            }
+            else
+            {
+                return Json(new { success = false, error = "Certificate not found" });
+            }
+        }
+
         [HttpGet]
         [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> DownloadExcelReport()
@@ -469,16 +533,17 @@ namespace StudentMedicalCertificateSystem.Controllers
                 // Заголовки столбцов
                 var headerRow = new Row();
                 headerRow.Append(
-                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Номер справки") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Фамилия") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Имя") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Отчество") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Образовательная программа") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Группа") },
-                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Клиника") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("№ справки") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Больница") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Диагноз") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Дата выдачи") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Болел с ") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Болел по") }
-                // Добавьте остальные заголовки столбцов
                 );
                 sheetData.AppendChild(headerRow);
 
@@ -487,16 +552,18 @@ namespace StudentMedicalCertificateSystem.Controllers
                 {
                     var dataRow = new Row();
                     dataRow.Append(
-                        new Cell() { DataType = CellValues.Number, CellValue = new CellValue(certificate.CertificateID.ToString()) },
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Student.LastName) },
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Student.FirstName) },
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Student.Patronymic) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Student.Group.Program.ProgramName) },
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Student.Group.GroupName) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.CertificateNumber.HasValue ? certificate.CertificateNumber.ToString() : "") },
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Clinic.ClinicName) },
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Diagnosis.DiagnosisName) },
-                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.IllnessDate.ToString("dd.MM.yyyy")) },
-                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.RecoveryDate.ToString("dd.MM.yyyy")) }
-                    // Добавьте остальные данные справок
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.IssueDate.HasValue ? certificate.IssueDate.Value.ToString("dd.MM.yyyy") : "") },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.IllnessDate.HasValue ? certificate.IllnessDate.Value.ToString("dd.MM.yyyy") : "") },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.RecoveryDate.HasValue ? certificate.RecoveryDate.Value.ToString("dd.MM.yyyy") : "") }
+
                     );
                     sheetData.AppendChild(dataRow);
                 }

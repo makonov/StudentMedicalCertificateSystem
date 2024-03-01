@@ -22,6 +22,8 @@
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+                        <input type="hidden" asp-for="IsFromCertificate" />
+
                         <div class="form-group">
                             <label asp-for="LastName" class="control-label">Введите фамилию</label>
                             <input asp-for="LastName" class="form-control" />

@@ -15,23 +15,29 @@
     <a asp-action="Index">Назад ко всем справкам</a>
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <h2>Редактирование заявки</h2>
+            <h2>Редактирование справки</h2>
             <div class="card">
                 <div class="card-body">
-                    <div class="form-group">
-                        <label class="control-label">ФИО студента:</label>
-                        <span class="fullname">@Model.FullName</span>
-                    </div>
                     <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
                         <input asp-for="CertificateID" type="hidden" />
                         <input asp-for="FullName" type="hidden" />
                         <input asp-for="StudentID" type="hidden" />
                         <input asp-for="ImagePath" type="hidden" />
+                        <input asp-for="ClinicAnswerPath" type="hidden" />
                         <input asp-for="CreatedAt" type="hidden" />
-
+                        
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input asp-for="IsConfirmed" /> Подтверждено
+                                </label>
+                            </div>
+                            <label class="control-label">ФИО студента:</label>
+                            <strong><span class="fullname">@Model.FullName</span></strong>
+                        </div>
+                        
                         <div class="form-group">
                             <label asp-for="ClinicID" class="control-label">Выберите клинику</label>
                             <select asp-for="ClinicID" class="form-control selectpicker" data-live-search="true">
@@ -55,9 +61,27 @@
                         </div>
 
                         <div class="form-group">
-                            <label asp-for="Image" class="control-label">Путь к справке</label>
+                            <label asp-for="CertificateNumber" class="control-label">Введите номер справки (опционально)</label>
+                            <input asp-for="CertificateNumber" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="CertificateNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Image" class="control-label">Изображение</label>
                             <input asp-for="Image" type="file" class="form-control" />
                             <span asp-validation-for="Image" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ClinicAnswer" class="control-label">Ответ больницы (опционально)</label>
+                            <input asp-for="ClinicAnswer" type="file" class="form-control" />
+                            <span asp-validation-for="ClinicAnswer" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="IssueDate" class="control-label">Дата начала болезни</label>
+                            <input asp-for="IssueDate" class="form-control" />
+                            <span asp-validation-for="IssueDate" class="text-danger"></span>
                         </div>
 
                         <div class="form-group">

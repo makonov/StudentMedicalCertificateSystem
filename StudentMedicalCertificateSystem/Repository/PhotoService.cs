@@ -34,6 +34,12 @@ namespace StudentMedicalCertificateSystem.Repository
                 return (false, null);
             }
 
+            // Проверка существования папки и создание её, если она не существует
+            var folderPath = Path.Combine(_webHostEnvironment.WebRootPath, targetFolder);
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
 
             // Обработка загрузки файла
             var fileExtension = Path.GetExtension(file.FileName).ToLower();

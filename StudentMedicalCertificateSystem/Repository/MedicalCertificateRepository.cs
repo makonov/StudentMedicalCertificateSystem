@@ -173,6 +173,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return await _context.MedicalCertificates
             .Include(c => c.Student)
             .Include(c => c.Student.Group)
+            .Include(c => c.Student.Group.Program)
             .Include(c => c.Clinic)
             .Include(c => c.Diagnosis)
             .Include(c => c.User)

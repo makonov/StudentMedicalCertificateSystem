@@ -21,5 +21,7 @@ namespace StudentMedicalCertificateSystem.ViewModels
         public int Course { get; set; }
         [Required(ErrorMessage = "Поле 'Дата рождения' обязательно для заполнения"), DataType(DataType.Date)]
         public DateTime? BirthDate { get; set; }
+
+        public bool IsFromCertificate { get; set; }
     }
 }

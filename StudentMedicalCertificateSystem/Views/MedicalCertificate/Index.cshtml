@@ -12,9 +12,33 @@
 
     <!-- Подключение Bootstrap-select CSS и JS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.is-confirmed-checkbox').change(function () {
+                var isChecked = $(this).is(':checked');
+                var certificateId = $(this).data('certificate-id');
+                $.ajax({
+                    url: '@Url.Action("UpdateIsConfirmed", "MedicalCertificate")',
+                    type: 'POST',
+                    data: {
+                        certificateId: certificateId,
+                        isChecked: isChecked
+                    },
+                    success: function (result) {
+                        // Обработка успешного обновления
+                        if (isChecked) {
+                            $('.confirmation-status').text('подтверждено');
+                        } else {
+                            $('.confirmation-status').text('не подтверждено');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 }
 
 @functions {
@@ -57,10 +81,13 @@
         <table>
             <thead>
             <th>ID</th>
+            <th>-</th>
             <th>Студент</th>
             <th>Группа</th>
             <th>Больница</th>
             <th>Диагноз</th>
+            <th>№</th>
+            <th>Дата выдачи</th>
             <th>Период болезни</th>
             <th>Действия</th>
             </thead>
@@ -69,11 +96,23 @@
                 {
                     <tr>
                         <td>@certificate.CertificateID</td>
+                        <td><input class="is-confirmed-checkbox" type="checkbox" data-certificate-id="@certificate.CertificateID" @(certificate.IsConfirmed ? "checked" : "") /></td>
                         <td>@certificate.Student.LastName @certificate.Student.FirstName @certificate.Student.Patronymic</td>
                         <td>@certificate.Student.Group.GroupName</td>
                         <td>@certificate.Clinic.ClinicName</td>
                         <td>@certificate.Diagnosis.DiagnosisName @certificate.Diagnosis.Code</td>
-                        <td>@certificate.IllnessDate.ToString("dd.MM.yyyy") - @certificate.RecoveryDate.ToString("dd.MM.yyyy")</td>
+                        <td>
+                            @if (certificate.CertificateNumber != null)
+                            {
+                                <span>@certificate.CertificateNumber</span>
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+                        <td>@certificate.IssueDate?.ToString("dd.MM.yyyy")</td>
+                        <td>@certificate.IllnessDate?.ToString("dd.MM.yyyy") - @certificate.RecoveryDate?.ToString("dd.MM.yyyy")</td>
                         <td>
                             <a href="#" data-toggle="modal" data-target="#certificateDetailsModal_@certificate.CertificateID" class="btn btn-sm btn-info" style="margin: 2px;">Детали</a>
                             @if(User.IsInRole(UserRoles.User) || User.IsInRole(UserRoles.Admin))
@@ -95,12 +134,32 @@
                                 </div>
                                 <div class="modal-body">
                                     <div class="certificate-details">
-                                        <p><strong>Номер справки:</strong> @certificate.CertificateID</p>
+                                        <p><strong>Статус:</strong>
+                                            @if(certificate.IsConfirmed)
+                                            {
+                                                <span class="confirmation-status"> подтверждено</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="confirmation-status"> не подтверждено</span>
+                                            }
+                                        </p>
                                         <p><strong>ФИО студента:</strong> @certificate.Student.LastName @certificate.Student.FirstName @certificate.Student.Patronymic</p>
                                         <p><strong>Группа:</strong> @certificate.Student.Group.GroupName</p>
                                         <p><strong>Больница:</strong> @certificate.Clinic.ClinicName</p>
                                         <p><strong>Диагноз:</strong> @certificate.Diagnosis.DiagnosisName @certificate.Diagnosis.Code</p>
-                                        <p><strong>Период болезни:</strong> с @certificate.IllnessDate.ToString("dd.MM.yyyy") по @certificate.RecoveryDate.ToString("dd.MM.yyyy")</p>
+                                        <p><strong>Номер справки:</strong> 
+                                            @if(certificate.CertificateNumber != null)
+                                            {
+                                                <span>@certificate.CertificateNumber</span>
+                                            }
+                                            else
+                                            {
+                                                <span>нет</span>
+                                            }
+                                        </p>
+                                        <p><strong>Дата выдачи:</strong> @certificate.IssueDate?.ToString("dd.MM.yyyy")</p>
+                                        <p><strong>Период болезни:</strong> с @certificate.IllnessDate?.ToString("dd.MM.yyyy") по @certificate.RecoveryDate?.ToString("dd.MM.yyyy")</p>
                                         <p><strong>Сотрудник:</strong>
                                             @if(certificate.User != null)
                                             {
@@ -124,11 +183,26 @@
                                         <p><strong>Дата создания:</strong> @certificate.CreatedAt</p>
                                         <p><strong>Дата обновления:</strong> @certificate.UpdatedAt</p>
                                     </div>
-                                    <div class="certificate-image">
+                                    <div class="image">
+                                        <p><strong>Изображение справки:</strong></p>
                                         <a target="_blank" href="@Url.Action("ImageView", "MedicalCertificate", new { imagePath = certificate.CertificatePath })">
                                             <img src="@certificate.CertificatePath" alt="Справка">
                                         </a>
                                     </div>
+                                    @if (certificate.ClinicAnswerPath != null)
+                                    {
+                                        <p><strong>Ответ из больницы:</strong></p>
+                                        <div class="image">
+                                            <a target="_blank" href="@Url.Action("ImageView", "MedicalCertificate", new { imagePath = certificate.ClinicAnswerPath })">
+                                                <img src="@certificate.ClinicAnswerPath" alt="Ответ из больницы">
+                                            </a>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <p><strong>Ответ из больницы:</strong> нет</p>
+                                    }
+
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
@@ -190,12 +264,16 @@
         background-color: #f2f2f2;
     }
 
-    td:nth-child(3) {
+    td:nth-child(4) {
         white-space: nowrap;
     }
 
-    td:nth-child(6) {
+    td:nth-child(9) {
         white-space: nowrap;
+    }
+
+    td:last-child {
+        padding: 2px;
     }
 
     .certificate-image {
@@ -203,7 +281,7 @@
         max-height: 100%;
     }
 
-    .certificate-image img {
+    .image img {
         max-width: 100%; /* Максимальная ширина изображения будет равна ширине окна */
         height: auto; /* Автоматическое масштабирование высоты для сохранения пропорций */
         display: block; /* Убирает пустые промежутки, если они есть */

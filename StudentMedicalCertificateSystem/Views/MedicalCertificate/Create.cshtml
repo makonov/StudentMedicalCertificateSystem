@@ -32,6 +32,7 @@
                                 }
                             </select>
                             <span asp-validation-for="FullName" class="text-danger"></span>
+                            <a asp-controller="MedicalCertificate" asp-action="CreateStudentAndReturn">Нет студента?</a>
                         </div>
 
                         <div class="form-group">
@@ -59,19 +60,37 @@
                         </div>
 
                         <div class="form-group">
+                            <label asp-for="CertificateNumber" class="control-label">Введите номер справки (опционально)</label>
+                            <input asp-for="CertificateNumber" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="CertificateNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
                             <label asp-for="Image" class="control-label">Изображение</label>
                             <input asp-for="Image"  type="file" class="form-control" />
                             <span asp-validation-for="Image" class="text-danger"></span>
                         </div>
 
                         <div class="form-group">
-                            <label asp-for="IlnessDate" class="control-label">Дата начала болезни</label>
+                            <label asp-for="ClinicAnswer" class="control-label">Ответ больницы (опционально)</label>
+                            <input asp-for="ClinicAnswer" type="file" class="form-control" />
+                            <span asp-validation-for="ClinicAnswer" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="IssueDate" class="control-label">Дата начала болезни</label>
+                            <input asp-for="IssueDate" class="form-control" />
+                            <span asp-validation-for="IssueDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="IlnessDate" class="control-label">Болел с</label>
                             <input asp-for="IlnessDate" class="form-control" />
                             <span asp-validation-for="IlnessDate" class="text-danger"></span>
                         </div>
 
                         <div class="form-group">
-                            <label asp-for="RecoveryDate" class="control-label">Дата выздоровления</label>
+                            <label asp-for="RecoveryDate" class="control-label">Болел по</label>
                             <input asp-for="RecoveryDate" class="form-control" />
                             <span asp-validation-for="RecoveryDate" class="text-danger"></span>
                         </div>
@@ -80,6 +99,14 @@
                             <label asp-for="Answer" class="control-label">Комментарии работника</label>
                             <input asp-for="Answer" class="form-control" />
                             <span asp-validation-for="Answer" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input asp-for="IsConfirmed" /> Подтверждено
+                                </label>
+                            </div>
                         </div>
 
                         <div class="form-group">
