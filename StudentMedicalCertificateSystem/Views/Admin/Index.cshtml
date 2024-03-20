@@ -8,6 +8,20 @@
     <h2>Пользователи</h2>
     <a class="btn btn-sm btn-primary mb-3" asp-controller="Admin" asp-action="CreateUser">Зарегистрировать нового пользователя</a>
 
+    @if (TempData["Error"] != null)
+    {
+        <div class="col-md-12 alert alert-danger">
+            <span><b>Извините!</b> - @TempData["Error"]</span>
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="col-md-12 alert-success">
+            <span> @TempData["Success"]</span>
+        </div>
+    }
+
     @if (Model.Any())
     {
         <table class="table table-bordered">
@@ -27,8 +41,12 @@
                         <td>@($"{user.LastName} {user.FirstName} {user.Patronymic}")</td>
                         <td>@string.Join(", ", user.Roles)</td>
                         <td>
-                            <a asp-controller="Admin" asp-action="Edit" asp-route-userid="@user.UserID" class="btn btn-sm btn-warning">Редактировать роль</a>
-                            <a asp-controller="Admin" asp-action="Delete" asp-route-userid="@user.UserID" class="btn btn-sm btn-danger">Удалить</a>
+                            <a asp-controller="Admin" asp-action="ChangePassword" asp-route-userid="@user.UserID" class="btn btn-sm btn-secondary" style="margin: 2px;">Изменить пароль</a>
+                            @if (User.Identity.Name != user.UserName)
+                            {
+                                <a asp-controller="Admin" asp-action="Edit" asp-route-userid="@user.UserID" class="btn btn-sm btn-warning" style="margin: 2px;">Изменить роль</a>
+                                <a asp-controller="Admin" asp-action="Delete" asp-route-userid="@user.UserID" class="btn btn-sm btn-danger" style="margin: 2px;">Удалить</a>
+                            }
                         </td>
                     </tr>
                 }
@@ -44,15 +62,17 @@
 <style>
     table {
         width: 100%;
+        border-collapse: collapse;
     }
 
     th, td {
-        padding: 12px;
-        text-align: center;
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
     }
 
     th {
-        background-color: #f8f9fa;
+        background-color: #f2f2f2;
     }
 
     .container {

@@ -26,7 +26,7 @@ namespace StudentMedicalCertificateSystem.Data
                 .HasOne(s => s.Group)
                 .WithMany()
                 .HasForeignKey(s => s.GroupID)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Cascade); 
 
             modelBuilder.Entity<MedicalCertificate>()
                 .HasOne(c => c.Diagnosis)

@@ -1,23 +1,21 @@
 ﻿@model StudentMedicalCertificateSystem.Models.Diagnosis
 <div class="container">
-    <h2>Подтверждение удаления</h2>
-
     <div>
-        <h4>Вы уверены, что хотите удалить этот диагноз?</h4>
+        <h2>Вы уверены, что хотите удалить этот диагноз?</h2>
         <hr />
         <dl class="row">
-            <dt class="col-sm-2">
-                ID диагноза
-            </dt>
-            <dd class="col-sm-10">
-                @Model.DiagnosisID
-            </dd>
-
             <dt class="col-sm-2">
                 Наименование диагноза
             </dt>
             <dd class="col-sm-10">
-                @Model.DiagnosisName
+                @(!string.IsNullOrEmpty(Model.DiagnosisName) ? Model.DiagnosisName : "Нет")
+            </dd>
+
+            <dt class="col-sm-2">
+                Код МКБ
+            </dt>
+            <dd class="col-sm-10">
+                @(!string.IsNullOrEmpty(Model.Code) ? Model.Code : "Нет")
             </dd>
         </dl>
 
@@ -50,6 +48,10 @@
 
     dt {
         font-weight: bold;
+    }
+
+    dd {
+        padding-top: 10px;
     }
 
 </style>

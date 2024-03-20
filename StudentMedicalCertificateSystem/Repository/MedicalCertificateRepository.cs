@@ -29,9 +29,16 @@ namespace StudentMedicalCertificateSystem.Repository
             return Save();
         }
 
-        public async Task<List<MedicalCertificate>> GetAll()
+        public bool Save()
         {
-            return await _context.MedicalCertificates.ToListAsync();
+            var saved = _context.SaveChanges();
+            return saved > 0 ? true : false;
+        }
+
+        public bool Update(MedicalCertificate certificate)
+        {
+            _context.Update(certificate);
+            return Save();
         }
 
         public async Task<List<MedicalCertificate>> GetAllSortedAndIncludedAsync()
@@ -51,7 +58,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return await _context.MedicalCertificates.FirstOrDefaultAsync(c => c.CertificateID == id);
         }
 
-        public async Task<List<MedicalCertificate>> GetAllByTimePeriod(DateTime startOfPeriod, DateTime endOfPeriod)
+        public async Task<List<MedicalCertificate>> GetAllByTimePeriodAsync(DateTime startOfPeriod, DateTime endOfPeriod)
         {
             return await _context.MedicalCertificates
                 .OrderByDescending(c => c.CertificateID)
@@ -87,55 +94,14 @@ namespace StudentMedicalCertificateSystem.Repository
              .ToListAsync();
         }
 
-        public async Task<MedicalCertificate> GetIncludedStudentByIdAsync(int id)
-        {
-            return await _context.MedicalCertificates.Include(c => c.Student).FirstOrDefaultAsync(c => c.CertificateID == id);
-        }
+        
 
-        public bool Save()
-        {
-            var saved = _context.SaveChanges();
-            return saved > 0 ? true : false;
-        }
-
-        public bool Update(MedicalCertificate certificate)
-        {
-            _context.Update(certificate);
-            return Save();
-        }
-
-        public bool UpdateByAnotherCertificateValues(MedicalCertificate certificateToUpdate, MedicalCertificate updatedCertificate)
-        {
-            _context.Entry(certificateToUpdate).CurrentValues.SetValues(updatedCertificate);
-            return Save();
-        }
-
-        public async Task<List<MedicalCertificate>> GetAllByStudentId(int studentId)
-        {
-            return await _context.MedicalCertificates.Where(c => c.StudentID == studentId).ToListAsync();
-        }
-
-        public async Task<List<MedicalCertificate>> GetSortedAndIncludedFromList(List<MedicalCertificate> list)
-        {
-            var certificateIds = list.Select(c => c.CertificateID).ToList();
-
-            return await _context.MedicalCertificates
-                .Where(c => certificateIds.Contains(c.CertificateID))
-                .OrderByDescending(x => x.CertificateID)
-                .Include(c => c.Student)
-                .Include(c => c.Student.Group)
-                .Include(c => c.Clinic)
-                .Include(c => c.Diagnosis)
-                .Include(c => c.User)
-                .ToListAsync();
-        }
-
-        public async Task<int> Count()
+        public async Task<int> CountAsync()
         {
             return await _context.MedicalCertificates.Include(c => c.Student).CountAsync();
         }
 
-        public async Task<List<MedicalCertificate>> GetPagedCertificates(int page, int pageSize)
+        public async Task<List<MedicalCertificate>> GetPagedCertificatesAsync(int page, int pageSize)
         {
             return await _context.MedicalCertificates
             .OrderByDescending(c => c.CertificateID)
@@ -147,25 +113,6 @@ namespace StudentMedicalCertificateSystem.Repository
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
-        }
-
-        public async Task<List<MedicalCertificate>> GetPagedCertificatesFromList(List<MedicalCertificate> certificates, int page, int pageSize)
-        {
-            var certificateIds = certificates.Select(c => c.CertificateID).ToList();
-
-            var pagedCertificates = _context.MedicalCertificates
-                .Where(c => certificateIds.Contains(c.CertificateID))
-                .OrderByDescending(c => c.CertificateID)
-                .Include(c => c.Student)
-                .Include(c => c.Student.Group)
-                .Include(c => c.Clinic)
-                .Include(c => c.Diagnosis)
-                .Include(c => c.User)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            return pagedCertificates;
         }
 
         public async Task<List<MedicalCertificate>> GetAllIncludedAsync()

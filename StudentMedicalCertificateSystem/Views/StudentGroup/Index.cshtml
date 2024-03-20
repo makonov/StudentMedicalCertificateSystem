@@ -9,13 +9,6 @@
         <a class="btn btn-sm btn-primary" href="@Url.Action("Create")">Добавить новую группу</a>
     </div>
 
-    @if (TempData["Error"] != null)
-    {
-        <div class="col-md-12 alert alert-danger" style="margin-top: 20px;">
-            <span><b>Извините!</b> - @TempData["Error"]</span>
-        </div>
-    }
-
     <div style="margin-top: 20px;">
         @if (Model.Count() != 0)
         {

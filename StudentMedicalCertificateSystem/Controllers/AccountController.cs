@@ -11,11 +11,9 @@ namespace StudentMedicalCertificateSystem.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        private readonly ApplicationDbContext _context;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, ApplicationDbContext context)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
         {
-            _context = context;
             _signInManager = signInManager;
             _userManager = userManager;
         }

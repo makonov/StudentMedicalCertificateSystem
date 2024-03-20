@@ -107,21 +107,14 @@ namespace StudentMedicalCertificateSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            try
-            {
-                var group = await _groupRepository.GetByIdAsync(id);
+            var group = await _groupRepository.GetByIdAsync(id);
 
-                if (group == null)
-                {
-                    return NotFound();
-                }
-
-                _groupRepository.Delete(group);
-            }
-            catch (DbUpdateException)
+            if (group == null)
             {
-                TempData["Error"] = "Данную группу нельзя удалить, так как к ней прикреплены студенты";
+                return NotFound();
             }
+
+            _groupRepository.Delete(group);
 
             return RedirectToAction("Index");
         }

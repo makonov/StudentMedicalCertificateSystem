@@ -56,10 +56,10 @@ namespace StudentMedicalCertificateSystem.Controllers
         [Authorize(Policy = "AllRolesPolicy")]
         public async Task<IActionResult> Index(int page = 1)
         {
-            var totalCount = await _certificateRepository.Count();
+            var totalCount = await _certificateRepository.CountAsync();
             var totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
 
-            var certificates = await _certificateRepository.GetPagedCertificates(page, PageSize);
+            var certificates = await _certificateRepository.GetPagedCertificatesAsync(page, PageSize);
             ViewBag.StudentList = new SelectList(await GetStudentFullNamesWithGroups(), "Value", "Text");
             ViewBag.ProgramList = new SelectList(await GetPrograms(), "Value", "Text");
 
@@ -409,7 +409,7 @@ namespace StudentMedicalCertificateSystem.Controllers
             }
             else if (isDateValid && certificates.Count == 0)
             {
-                certificates = await _certificateRepository.GetAllByTimePeriod(ilnessDate, recoveryDate);
+                certificates = await _certificateRepository.GetAllByTimePeriodAsync(ilnessDate, recoveryDate);
             }
 
             if (filterViewModel.ProgramID != null && certificates.Count() != 0)
@@ -541,6 +541,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("№ справки") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Больница") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Диагноз") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Код диагноза") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Дата выдачи") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Болел с ") },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue("Болел по") }
@@ -560,6 +561,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.CertificateNumber.HasValue ? certificate.CertificateNumber.ToString() : "") },
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Clinic.ClinicName) },
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.Diagnosis.DiagnosisName) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(!string.IsNullOrEmpty(certificate.Diagnosis.Code) ? certificate.Diagnosis.Code : "") },
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.IssueDate.HasValue ? certificate.IssueDate.Value.ToString("dd.MM.yyyy") : "") },
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.IllnessDate.HasValue ? certificate.IllnessDate.Value.ToString("dd.MM.yyyy") : "") },
                         new Cell() { DataType = CellValues.String, CellValue = new CellValue(certificate.RecoveryDate.HasValue ? certificate.RecoveryDate.Value.ToString("dd.MM.yyyy") : "") }

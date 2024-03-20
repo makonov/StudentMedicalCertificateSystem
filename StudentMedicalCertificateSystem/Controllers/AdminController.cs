@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -24,8 +26,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         public IActionResult Index()
         {
-            var currentUser = _userManager.GetUserAsync(User).Result;
-            var users = _userManager.Users.Where(u => u.Id != currentUser.Id).ToList();
+            var users = _userManager.Users.ToList();
             var userViewModels = new List<UserViewModel>();
             foreach (var user in users)
             {
@@ -124,6 +125,7 @@ namespace StudentMedicalCertificateSystem.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string userId, string role)
         {
             // получаем пользователя
@@ -163,6 +165,54 @@ namespace StudentMedicalCertificateSystem.Controllers
             }
 
             await _userManager.DeleteAsync(user);
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> ChangePassword(string userId)
+        {
+            User user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                ChangePasswordViewModel viewModel = new ChangePasswordViewModel{ UserName = user.UserName, UserId = userId };
+                return View(viewModel);
+            }
+
+            return NotFound();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel viewModel)
+        {
+            if (!ModelState.IsValid) return View(viewModel);
+
+            // Проверка соответствия пароля требованиям
+            var passwordValidationResult = await _userManager.PasswordValidators.First().ValidateAsync(_userManager, null, viewModel.Password);
+            if (!passwordValidationResult.Succeeded)
+            {
+                // Пароль не соответствует требованиям
+                TempData["Error"] = "Пароль не соответствует требованиям безопасности." +
+                    " Минимальная длина пароля - 6 символов, он должен содержать символы " +
+                    "нижнего и верхнего регистра, цифры, а также специальные символы.";
+
+                return View(viewModel);
+            }
+
+            User? user = await _userManager.FindByIdAsync(viewModel.UserId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, viewModel.Password);
+            
+            if (result.Succeeded)
+                TempData["Success"] = "Пароль успешно изменен.";
+            else
+                TempData["Error"] = "Не удалось изменить пароль.";
 
             return RedirectToAction("Index");
         }

@@ -1,9 +1,10 @@
 ﻿@model StudentMedicalCertificateSystem.Models.Student
 
-<h2>Подтверждение удаления</h2>
-
 <div>
-    <h4>Вы уверены, что хотите удалить этого студента?</h4>
+    <div class="col-md-12 alert alert-danger" style="margin-top: 20px;">
+        <span style="font-size: 18px;"><b>Внимание!</b> - При удалении студента удалятся все созданные на него справки.</span>
+    </div>
+    <h2>Вы уверены, что хотите удалить этого студента?</h2>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
@@ -71,6 +72,10 @@
 
     dt {
         font-weight: bold;
+    }
+
+    dd {
+        padding-top: 10px;
     }
 
 </style>
