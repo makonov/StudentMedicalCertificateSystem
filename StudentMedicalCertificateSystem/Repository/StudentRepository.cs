@@ -27,29 +27,9 @@ namespace StudentMedicalCertificateSystem.Repository
             return Save();
         }
 
-        public async Task<List<Student>> GetAll()
-        {
-            return await _context.Students.ToListAsync();
-        }
-
-
-        public async Task<List<Student>> GetAllSortedAndIncludedAsync()
-        {
-            return await _context.Students
-                .OrderByDescending(s => s.StudentID)
-                .Include(s => s.Group)
-                .Include(s => s.Group.Program)
-                .ToListAsync();
-        }
-
-        public async Task<Student> GetDefaultByFullName(string lastName, string firstName, string patronymic)
+        public async Task<Student> GetDefaultByFullNameAsync(string lastName, string firstName, string patronymic)
         {
             return await _context.Students.SingleOrDefaultAsync(s => s.LastName == lastName && s.FirstName == firstName && s.Patronymic == patronymic);
-        }
-
-        public async Task<Student> GetByIdAsync(int id)
-        {
-            return await _context.Students.FirstOrDefaultAsync(s => s.StudentID == id);
         }
 
         public bool Save()
@@ -64,12 +44,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return Save();
         }
 
-        public async Task<List<Student>> GetAllIncludedGroupAsync()
-        {
-            return await _context.Students.Include(s => s.Group).ToListAsync();
-        }
-
-        public async Task<List<SelectListItem>> GetStudentFullNamesWithGroupsAsSelectedList()
+        public async Task<List<SelectListItem>> GetFullNamesWithGroupsAsSelectedListAsync()
         {
             return await _context.Students.Include(s => s.Group).Select(s => new SelectListItem { Value = $"{s.LastName} {s.FirstName} {s.Patronymic}", Text = $"{s.LastName} {s.FirstName} {s.Patronymic} - {s.Group.GroupName}" }).ToListAsync();
         }
@@ -82,7 +57,7 @@ namespace StudentMedicalCertificateSystem.Repository
                 .FirstOrDefaultAsync(s => s.StudentID == id);
         }
 
-        public async Task<Student> GetByFullNameAndGroup(string lastName, string firstName, string patronymic, string group)
+        public async Task<Student> GetByFullNameAndGroupAsync(string lastName, string firstName, string patronymic, string group)
         {
             return await _context.Students
                 .Include(s => s.Group)
@@ -98,7 +73,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return await _context.Students.CountAsync();
         }
 
-        public async Task<List<Student>> GetPagedStudents(int page, int pageSize)
+        public async Task<List<Student>> GetPagedStudentsAsync(int page, int pageSize)
         {
             return await _context.Students
             .OrderByDescending(s => s.StudentID)

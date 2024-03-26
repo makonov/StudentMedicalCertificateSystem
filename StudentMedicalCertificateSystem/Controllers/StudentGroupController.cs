@@ -13,7 +13,6 @@ namespace StudentMedicalCertificateSystem.Controllers
     {
         private readonly IStudentGroupRepository _groupRepository;
         private readonly IEducationalProgramRepository _programRepository;
-        private const int PageSize = 20;
 
         public StudentGroupController(IStudentGroupRepository groupRepository,
             IEducationalProgramRepository programRepository)
@@ -24,13 +23,13 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var groups = await _groupRepository.GetAllSorted();
+            var groups = await _groupRepository.GetAllSortedAsync();
             return View(groups);
         }
 
         private async Task<List<SelectListItem>> GetPrograms()
         {
-            return await _programRepository.GetProgramsAsSelectList();
+            return await _programRepository.GetProgramsAsSelectListAsync();
         }
 
         public async Task<IActionResult> Create()

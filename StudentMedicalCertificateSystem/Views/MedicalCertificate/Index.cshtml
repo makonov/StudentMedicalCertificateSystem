@@ -81,7 +81,7 @@
         <table>
             <thead>
             <th>ID</th>
-            <th>-</th>
+            <th>Статус</th>
             <th>Студент</th>
             <th>Группа</th>
             <th>Больница</th>
@@ -264,6 +264,10 @@
         background-color: #f2f2f2;
     }
 
+    td:nth-child(2), td:nth-child(7) {
+        text-align:center;
+    }
+
     td:nth-child(4) {
         white-space: nowrap;
     }
@@ -288,5 +292,9 @@
         margin: 0 auto; /* Центрирует изображение по горизонтали */
     }
 
+    .is-confirmed-checkbox {
+        transform: scale(1.5); 
+        margin-right: 10px; 
+    }
 
 </style>

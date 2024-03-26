@@ -28,7 +28,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return Save();
         }
 
-        public async Task<List<User>> GetAll()
+        public async Task<List<User>> GetAllAsync()
         {
             return await _context.Users.ToListAsync();
         }
@@ -38,7 +38,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public async Task<List<SelectListItem>> GetUsersAsSelectList()
+        public async Task<List<SelectListItem>> GetUsersAsSelectListAsync()
         {
             return await _context.Users.Select(u => new SelectListItem { Value = u.Id.ToString(), Text = u.LastName + " " + u.FirstName + " " + u.Patronymic }).ToListAsync();
         }

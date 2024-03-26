@@ -25,7 +25,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return Save();
         }
 
-        public async Task<List<EducationalProgram>> GetAllSorted()
+        public async Task<List<EducationalProgram>> GetAllSortedAsync()
         {
             return await _context.EducationalPrograms.OrderBy(p => p.ProgramName).ToListAsync();
         }
@@ -35,7 +35,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return await _context.EducationalPrograms.FirstOrDefaultAsync(p => p.ProgramID == id);
         }
 
-        public async Task<List<SelectListItem>> GetProgramsAsSelectList()
+        public async Task<List<SelectListItem>> GetProgramsAsSelectListAsync()
         {
             return await _context.EducationalPrograms.Select(p => new SelectListItem { Value = p.ProgramID.ToString(), Text = p.ProgramName }).ToListAsync();
         }

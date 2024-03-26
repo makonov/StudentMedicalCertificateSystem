@@ -19,11 +19,11 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var clinics = await _clinicRepository.GetAllSorted();
+            var clinics = await _clinicRepository.GetAllSortedAsync();
             return View(clinics);
         }
 
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
             var clinic = new Clinic();
             return View(clinic);
@@ -31,7 +31,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Clinic clinic)
+        public IActionResult Create(Clinic clinic)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +58,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Clinic clinic)
+        public IActionResult Edit(int id, Clinic clinic)
         {
             if (!ModelState.IsValid)
             {

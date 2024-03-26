@@ -18,7 +18,7 @@ namespace StudentMedicalCertificateSystem.Controllers
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AdminController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context, IEducationalProgramRepository officeRepository)
+        public AdminController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
         {
             _roleManager = roleManager;
             _userManager = userManager;
@@ -57,47 +57,48 @@ namespace StudentMedicalCertificateSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser(CreateUserViewModel createUserViewModel)
+        public async Task<IActionResult> CreateUser(CreateUserViewModel viewModel)
         {
             if (!ModelState.IsValid) 
             {
                 TempData["Error"] = "Ошибка";
-                createUserViewModel.AllRoles = _roleManager.Roles.ToList();
-                return View(createUserViewModel);
+                viewModel.AllRoles = _roleManager.Roles.ToList();
+                return View(viewModel);
             } 
 
-            var user = await _userManager.FindByNameAsync(createUserViewModel.UserName);
+            // Проверка на существование пользователя
+            var user = await _userManager.FindByNameAsync(viewModel.UserName);
             if (user != null)
             {
                 TempData["Error"] = "Пользователь с данным именем уже существует";
-                createUserViewModel.AllRoles = _roleManager.Roles.ToList();
-                return View(createUserViewModel);
+                viewModel.AllRoles = _roleManager.Roles.ToList();
+                return View(viewModel);
             }
 
             // Проверка соответствия пароля требованиям
-            var passwordValidationResult = await _userManager.PasswordValidators.First().ValidateAsync(_userManager, null, createUserViewModel.Password);
+            var passwordValidationResult = await _userManager.PasswordValidators.First().ValidateAsync(_userManager, null, viewModel.Password);
             if (!passwordValidationResult.Succeeded)
             {
                 // Пароль не соответствует требованиям
                 TempData["Error"] = "Пароль не соответствует требованиям безопасности." +
                     " Минимальная длина пароля - 6 символов, он должен содержать символы " +
                     "нижнего и верхнего регистра, цифры, а также специальные символы.";
-                createUserViewModel.AllRoles = _roleManager.Roles.ToList();
-                return View(createUserViewModel);
+                viewModel.AllRoles = _roleManager.Roles.ToList();
+                return View(viewModel);
             }
 
             var newUser = new User
             {
-                UserName = createUserViewModel.UserName,
-                LastName = createUserViewModel.LastName,
-                FirstName = createUserViewModel.FirstName,
-                Patronymic = createUserViewModel.Patronymic
+                UserName = viewModel.UserName,
+                LastName = viewModel.LastName,
+                FirstName = viewModel.FirstName,
+                Patronymic = viewModel.Patronymic
             };
 
-            var newUserResponse = await _userManager.CreateAsync(newUser, createUserViewModel.Password);
+            var newUserResponse = await _userManager.CreateAsync(newUser, viewModel.Password);
 
             if (newUserResponse.Succeeded)
-                await _userManager.AddToRoleAsync(newUser, createUserViewModel.UserRole);
+                await _userManager.AddToRoleAsync(newUser, viewModel.UserRole);
 
             return RedirectToAction("Index");
         }

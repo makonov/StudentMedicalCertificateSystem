@@ -13,7 +13,7 @@ namespace StudentMedicalCertificateSystem.Models
         public int? ProgramID {  get; set; }
         public virtual EducationalProgram? Program { get; set; }
         [Required(ErrorMessage = "Необходимо ввести наименование группы")]
-        [RegularExpression(@"^[А-ЯA-Zа-яa-z]+-\d{2}-\d+$", ErrorMessage = "Неверный формат наименования группы")]
+        [RegularExpression(@"^[А-ЯA-Zа-яa-z]+-\d{2}-\d+$", ErrorMessage = "Неверный формат наименования группы. Правильный формат: аббревиатура программы-две последние цифры года-номер.")]
         public string? GroupName { get; set; }
 
     }

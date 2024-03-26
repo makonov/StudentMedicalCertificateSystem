@@ -34,7 +34,7 @@ namespace StudentMedicalCertificateSystem.Controllers
             var totalCount = await _studentRepository.Count();
             var totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
 
-            var students = await _studentRepository.GetPagedStudents(page, PageSize);
+            var students = await _studentRepository.GetPagedStudentsAsync(page, PageSize);
 
             var viewModel = new ShowStudentsViewModel
             {
@@ -52,20 +52,20 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         private async Task<List<SelectListItem>> GetGroups()
         {
-            return await _groupRepository.GetGroupsAsSelectList();
+            return await _groupRepository.GetGroupsAsSelectListAsync();
         }
 
         private async Task<List<SelectListItem>> GetPrograms()
         {
-            return await _programRepository.GetProgramsAsSelectList();
+            return await _programRepository.GetProgramsAsSelectListAsync();
         }
 
         private async Task<List<SelectListItem>> GetStudents()
         {
-            return await _studentRepository.GetStudentFullNamesWithGroupsAsSelectedList();
+            return await _studentRepository.GetFullNamesWithGroupsAsSelectedListAsync();
         }
 
-        public async Task MakeLists()
+        private async Task MakeLists()
         {
             ViewBag.GroupList = new SelectList(await GetGroups(), "Value", "Text");
         }
@@ -189,23 +189,23 @@ namespace StudentMedicalCertificateSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Find(FindStudentViewModel findViewModel)
+        public async Task<IActionResult> Find(FindStudentViewModel viewModel)
         {
             ViewBag.StudentList = new SelectList(await GetStudents(), "Value", "Text");
             if (!ModelState.IsValid)
             {
                 ModelState.AddModelError("", "Произошла ошибка");
-                return View(findViewModel);
+                return View(viewModel);
             }
 
-            string[] studentData = findViewModel.StudentData.Split(" - ");
+            string[] studentData = viewModel.StudentData.Split(" - ");
             string[] fullName = studentData[0].Split();
             string groupName = studentData[1];
             string lastName = fullName[0];
             string firstName = fullName[1];
             string patronymic = fullName[2];
-            Student foundStudent = await _studentRepository.GetByFullNameAndGroup(lastName, firstName, patronymic, groupName);
-            ShowStudentsViewModel viewModel = new ShowStudentsViewModel
+            Student foundStudent = await _studentRepository.GetByFullNameAndGroupAsync(lastName, firstName, patronymic, groupName);
+            ShowStudentsViewModel newViewModel = new ShowStudentsViewModel
             {
                 Students = new List<Student> { foundStudent },
                 PagingInfo = new PagingInfo
@@ -216,7 +216,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                     TotalPages = 1
                 }
             };
-            return View("Index", viewModel);
+            return View("Index", newViewModel);
         }
     }
 }

@@ -19,11 +19,11 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var diagnoses = await _diagnosisRepository.GetAllSorted();
+            var diagnoses = await _diagnosisRepository.GetAllSortedAsync();
             return View(diagnoses);
         }
 
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
             var diagnosis = new Diagnosis();
             return View(diagnosis);
@@ -31,7 +31,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Diagnosis diagnosis)
+        public IActionResult Create(Diagnosis diagnosis)
         {
             if (diagnosis.Code == null && diagnosis.DiagnosisName == null)
             {
@@ -57,7 +57,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Diagnosis diagnosis)
+        public IActionResult Edit(int id, Diagnosis diagnosis)
         {
             if (diagnosis.Code == null && diagnosis.DiagnosisName == null)
             {

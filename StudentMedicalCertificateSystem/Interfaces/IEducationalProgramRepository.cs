@@ -5,8 +5,8 @@ namespace StudentMedicalCertificateSystem.Interfaces
 {
     public interface IEducationalProgramRepository
     {
-        Task<List<EducationalProgram>> GetAllSorted();
-        Task<List<SelectListItem>> GetProgramsAsSelectList();
+        Task<List<EducationalProgram>> GetAllSortedAsync();
+        Task<List<SelectListItem>> GetProgramsAsSelectListAsync();
         Task<EducationalProgram> GetByIdAsync(int id);
         bool Add(EducationalProgram program);
         bool Update(EducationalProgram program);

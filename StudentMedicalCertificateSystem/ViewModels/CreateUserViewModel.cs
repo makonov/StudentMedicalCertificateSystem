@@ -17,13 +17,16 @@ namespace StudentMedicalCertificateSystem.ViewModels
         [Compare("Password", ErrorMessage = "Введенный пароль не совпадает")]
         public string ConfirmPassword { get; set; }
         [Required(ErrorMessage = "Введите фамилию")]
+        [RegularExpression(@"^[А-Яа-яA-Za-z]+$", ErrorMessage = "Поле 'Фамилия' должно содержать только буквы")]
         public string LastName { get; set; }
         [Required(ErrorMessage = "Введите имя")]
+        [RegularExpression(@"^[А-Яа-яA-Za-z]+$", ErrorMessage = "Поле 'Имя' должно содержать только буквы")]
         public string FirstName { get; set; }
         [Required(ErrorMessage = "Введите отчество")]
+        [RegularExpression(@"^[А-Яа-яA-Za-z]+$", ErrorMessage = "Поле 'Отчество' должно содержать только буквы")]
         public string Patronymic {  get; set; }
         public List<IdentityRole> AllRoles { get; set; }
-        [MinLength(1, ErrorMessage = "Необходимо выбрать хотя бы одну роль")]
+        [Required(ErrorMessage = "Необходимо выбрать роль пользователя")]
         public string UserRole { get; set; }
         public CreateUserViewModel()
         {

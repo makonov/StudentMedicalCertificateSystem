@@ -27,7 +27,7 @@ namespace StudentMedicalCertificateSystem.Repository
             return Save();
         }
 
-        public async Task<List<StudentGroup>> GetAllSorted()
+        public async Task<List<StudentGroup>> GetAllSortedAsync()
         {
             return await _context.StudentGroups
                 .Include(g => g.Program)
@@ -41,7 +41,7 @@ namespace StudentMedicalCertificateSystem.Repository
                 .FirstOrDefaultAsync(g => g.GroupID == id);
         }
 
-        public async Task<List<SelectListItem>> GetGroupsAsSelectList()
+        public async Task<List<SelectListItem>> GetGroupsAsSelectListAsync()
         {
             return await _context.StudentGroups.Select(g => new SelectListItem { Value = g.GroupID.ToString(), Text = g.GroupName }).ToListAsync();
         }

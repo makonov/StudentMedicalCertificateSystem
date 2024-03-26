@@ -31,7 +31,7 @@
                         <div class="form-group">
                             <div class="checkbox">
                                 <label>
-                                    <input asp-for="IsConfirmed" /> Подтверждено
+                                    <input class="is-confirmed-checkbox" asp-for="IsConfirmed" /> Подтверждено
                                 </label>
                             </div>
                             <label class="control-label">ФИО студента:</label>
@@ -113,3 +113,12 @@
         </div>
     </div>
 </div>
+
+<style>
+    
+    .is-confirmed-checkbox {
+        transform: scale(1.5);
+        margin-right: 10px;
+    }
+
+</style>
