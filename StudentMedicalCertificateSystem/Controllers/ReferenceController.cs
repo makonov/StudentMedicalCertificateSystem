@@ -11,6 +11,5 @@ namespace StudentMedicalCertificateSystem.Controllers
         {
             return View();
         }
-
     }
 }
