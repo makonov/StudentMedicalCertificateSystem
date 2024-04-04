@@ -14,17 +14,17 @@ namespace StudentMedicalCertificateSystem.Tests.Repository
 {
     public class PhotoServiceTests
     {
-        private readonly IWebHostEnvironment _webHostEnvironmentMock;
+        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly PhotoService _photoService;
 
         public PhotoServiceTests()
         {
-            _webHostEnvironmentMock = A.Fake<IWebHostEnvironment>();
-            _photoService = new PhotoService(_webHostEnvironmentMock);
+            _webHostEnvironment = A.Fake<IWebHostEnvironment>();
+            _photoService = new PhotoService(_webHostEnvironment);
         }
 
         [Fact]
-        public void PhotoService_IsFileUploadedAndExtensionAllowed_ValidExtension_ReturnsTrue()
+        public void PhotoService_IsFileUploadedAndExtensionAllowed_ValidExtension_ReturnsSuccess()
         {
             // Arrange
             var file = A.Fake<IFormFile>();
@@ -39,7 +39,7 @@ namespace StudentMedicalCertificateSystem.Tests.Repository
         }
 
         [Fact]
-        public void PhotoService_IsFileUploadedAndExtensionAllowed_InvalidExtension_ReturnsFalse()
+        public void PhotoService_IsFileUploadedAndExtensionAllowed_InvalidExtension_ReturnsFailure()
         {
             // Arrange
             var file = A.Fake<IFormFile>();
@@ -54,7 +54,20 @@ namespace StudentMedicalCertificateSystem.Tests.Repository
         }
 
         [Fact]
-        public async Task PhotoService_UploadPhotoAsync_ValidFile_UploadsFileSuccessfully()
+        public void PhotoService_IsFileUploadedAndExtensionAllowed_FileNotUploaded_ReturnsFailure()
+        {
+            // Arrange
+            IFormFile file = null;
+
+            // Act
+            var result = _photoService.IsFileUploadedAndExtensionAllowed(file, new[] { ".jpg" });
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task PhotoService_UploadPhotoAsync_ValidFile_ReturnsSuccess()
         {
             // Arrange
             var file = A.Fake<IFormFile>();
@@ -72,7 +85,39 @@ namespace StudentMedicalCertificateSystem.Tests.Repository
         }
 
         [Fact]
-        public async Task PhotoService_ReplacePhotoAsync_ValidFile_ReplacesFileSuccessfully()
+        public async Task PhotoService_UploadPhotoAsync_FileNotUploaded_ReturnsFailure()
+        {
+            // Arrange
+            IFormFile file = null;
+
+            var targetFolder = "targetFolder";
+
+            // Act
+            var result = await _photoService.UploadPhotoAsync(file, targetFolder);
+
+            // Assert
+            result.IsUploadedAndExtensionValid.Should().BeFalse();
+            result.FileName.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task PhotoService_ReplacePhotoAsync_FileNotUploaded_ReturnsFailure()
+        {
+            // Arrange
+            IFormFile file = null;
+            var targetFolder = "targetFolder";
+            var existingFile = "file";
+
+            // Act
+            var result = await _photoService.ReplacePhotoAsync(file, targetFolder, existingFile);
+
+            // Assert
+            result.IsReplacementSuccess.Should().BeFalse();
+            result.NewFileName.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task PhotoService_ReplacePhotoAsync_ValidFile_ReturnsSuccess()
         {
             // Arrange
             var file = A.Fake<IFormFile>();
@@ -95,7 +140,7 @@ namespace StudentMedicalCertificateSystem.Tests.Repository
         }
 
         [Fact]
-        public async Task PhotoService_DeletePhotoAsync_ExistingFile_DeletesFileSuccessfully()
+        public async Task PhotoService_DeletePhotoAsync_ExistingFile_ReturnsSuccess()
         {
             // Arrange
             var targetFolder = "targetFolder";
@@ -108,6 +153,34 @@ namespace StudentMedicalCertificateSystem.Tests.Repository
             // Assert
             result.Should().BeTrue();
         }
+
+        [Fact]
+        public async Task PhotoService_DeletePhotoAsync_NullFilePath_ReturnsFailure()
+        {
+            // Arrange
+            string filePath = null;
+
+            // Act
+            var result = await _photoService.DeletePhotoAsync(filePath);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task PhotoService_DeletePhotoAsync_NonExistingFile_ReturnsFailure()
+        {
+            // Arrange
+            string filePath = "non_existing_file.jpg";
+            A.CallTo(() => _webHostEnvironment.WebRootPath).Returns("C:\\fake\\webroot\\path");
+
+            // Act
+            var result = await _photoService.DeletePhotoAsync(filePath);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
     }
 }
 

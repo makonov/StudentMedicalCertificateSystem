@@ -209,7 +209,7 @@ namespace StudentMedicalCertificateSystem.Tests.Repository
         }
 
         [Fact]
-        public async void StudentRepository_GetFullNamesWithGroupsAsSelectedListAsync_ReturnsListOfSelectedItems()
+        public async void StudentRepository_GetFullNamesWithGroupsAsSelectedListAsync_ReturnsListOfSelectedListItems()
         {
             //Arrange
             var students = GetListOfStudents();
@@ -312,6 +312,28 @@ namespace StudentMedicalCertificateSystem.Tests.Repository
             //Assert
             result.Should().BeOfType<List<Student>>();
             result.Should().HaveCount(2); 
+        }
+
+        [Fact]
+        public async void StudentRepository_GetDefaultByFullNameAsync_ReturnsStudent()
+        {
+            //Arrange
+            var students = GetListOfStudents();
+            var dbContext = await GetDbContext();
+            var studentRepository = new StudentRepository(dbContext);
+            foreach (var student in students)
+            {
+                studentRepository.Add(student);
+            }
+
+            //Act
+            var result = await studentRepository.GetDefaultByFullNameAsync(students[0].LastName, students[0].FirstName, students[0].Patronymic);
+
+            //Assert
+            result.Should().BeOfType<Student>();
+            result.LastName.Should().Be(students[0].LastName);
+            result.FirstName.Should().Be(students[0].FirstName);
+            result.Patronymic.Should().Be(students[0].Patronymic);
         }
     }
 }

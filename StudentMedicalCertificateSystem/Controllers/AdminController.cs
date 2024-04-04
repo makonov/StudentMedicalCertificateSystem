@@ -188,6 +188,12 @@ namespace StudentMedicalCertificateSystem.Controllers
         {
             if (!ModelState.IsValid) return View(viewModel);
 
+            User? user = await _userManager.FindByIdAsync(viewModel.UserId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
             // Проверка соответствия пароля требованиям
             var passwordValidationResult = await _userManager.PasswordValidators.First().ValidateAsync(_userManager, null, viewModel.Password);
             if (!passwordValidationResult.Succeeded)
@@ -198,13 +204,6 @@ namespace StudentMedicalCertificateSystem.Controllers
                     "нижнего и верхнего регистра, цифры, а также специальные символы.";
 
                 return View(viewModel);
-            }
-
-            User? user = await _userManager.FindByIdAsync(viewModel.UserId);
-
-            if (user == null)
-            {
-                return NotFound();
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);

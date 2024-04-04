@@ -242,7 +242,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
                 if (!replacementResult.IsReplacementSuccess)
                 {
-                    ModelState.AddModelError("Image", "Выберите файл в формате jpg, jpeg, png или pdf");
+                    ModelState.AddModelError("Image", "Выберите файл в формате jpg, jpeg, png или pdf.");
                     await MakeLists();
                     return View(viewModel);
                 }
@@ -264,7 +264,7 @@ namespace StudentMedicalCertificateSystem.Controllers
 
                 if (!updateResult.IsReplacementSuccess)
                 {
-                    ModelState.AddModelError("Image", "Выберите файл в формате jpg, jpeg, png или pdf");
+                    ModelState.AddModelError("Image", "Выберите файл в формате jpg, jpeg, png или pdf.");
                     await MakeLists();
                     return View(viewModel);
                 }
@@ -428,11 +428,6 @@ namespace StudentMedicalCertificateSystem.Controllers
         [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var certificate = await _certificateRepository.GetIncludedByIdAsync(id);
 
             if (certificate == null)
@@ -473,7 +468,6 @@ namespace StudentMedicalCertificateSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateIsConfirmed(int certificateId, bool isChecked)
         {
-            // Получите ваш сертификат по ID и обновите значение IsConfirmed
             var certificate = await  _certificateRepository.GetByIdAsync(certificateId);
             if (certificate != null)
             {
