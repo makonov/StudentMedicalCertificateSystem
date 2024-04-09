@@ -162,8 +162,8 @@ namespace StudentMedicalCertificateSystem.Controllers
                     ClinicID = (int)viewModel.ClinicID,
                     DiagnosisID = (int)viewModel.DiagnosisID,
                     UserID = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    CertificatePath = "/Certificates/" + imageUploadResult.FileName,
-                    ClinicAnswerPath = clinicAnswerUploadResult.IsUploadedAndExtensionValid ? "/Confirmations/" + clinicAnswerUploadResult.FileName : null,
+                    CertificatePath = "Certificates\\" + imageUploadResult.FileName,
+                    ClinicAnswerPath = clinicAnswerUploadResult.IsUploadedAndExtensionValid ? "Confirmations\\" + clinicAnswerUploadResult.FileName : null,
                     CertificateNumber = viewModel.CertificateNumber,
                     IssueDate = viewModel.IssueDate,
                     IllnessDate = viewModel.IlnessDate,
@@ -248,7 +248,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 }
 
                 // Присвоение пути к новому файлу в модели
-                imagePath = "/Certificates/" + replacementResult.NewFileName;
+                imagePath = $"Certificates\\{replacementResult.NewFileName}";
             }
             else
             {
@@ -270,7 +270,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 }
 
                 // Присвоение пути к новому файлу в модели
-                clinicAnswerPath = "/Confirmations/" + updateResult.NewFileName;
+                clinicAnswerPath = $"Confirmations\\{updateResult.NewFileName}";
             }
             else
             {
@@ -451,7 +451,8 @@ namespace StudentMedicalCertificateSystem.Controllers
             }
 
             // Удаление файла с использованием PhotoService
-            await _photoService.DeletePhotoAsync(certificate.CertificatePath);
+            _photoService.DeletePhoto(certificate.CertificatePath);
+            _photoService.DeletePhoto(certificate.ClinicAnswerPath);
 
             _certificateRepository.Delete(certificate);
             _certificateRepository.Save();

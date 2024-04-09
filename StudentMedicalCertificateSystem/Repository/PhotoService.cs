@@ -36,10 +36,8 @@ namespace StudentMedicalCertificateSystem.Repository
 
             // Проверка существования папки и создание её, если она не существует
             var folderPath = Path.Combine(_webHostEnvironment.WebRootPath, targetFolder);
-            if (!Directory.Exists(folderPath))
-            {
-                Directory.CreateDirectory(folderPath);
-            }
+            Directory.CreateDirectory(folderPath);
+            
 
             // Обработка загрузки файла
             var fileExtension = Path.GetExtension(file.FileName).ToLower();
@@ -63,7 +61,7 @@ namespace StudentMedicalCertificateSystem.Repository
             }
 
             // Удаление старого файла
-            await DeletePhotoAsync(existingFilePath);
+            DeletePhoto(existingFilePath);
 
             // Обработка загрузки нового файла
             var fileExtension = Path.GetExtension(file.FileName).ToLower();
@@ -79,11 +77,11 @@ namespace StudentMedicalCertificateSystem.Repository
         }
 
         // Удаление файла по указанному пути
-        public async Task<bool> DeletePhotoAsync(string filePath)
+        public bool DeletePhoto(string filePath)
         {
             if (!string.IsNullOrEmpty(filePath))
             {
-                var fullPath = Path.Combine(_webHostEnvironment.WebRootPath, filePath.TrimStart('/'));
+                var fullPath = Path.Combine(_webHostEnvironment.WebRootPath, filePath.TrimStart('\\'));
                 if (File.Exists(fullPath))
                 {
                     File.Delete(fullPath);
