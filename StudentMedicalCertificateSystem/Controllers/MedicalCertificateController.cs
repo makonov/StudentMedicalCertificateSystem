@@ -305,20 +305,25 @@ namespace StudentMedicalCertificateSystem.Controllers
             return RedirectToAction("Create", "Student", new { isFromCertificate = true });
         }
 
+        // Метод для отправки параметров фильтрации на сервер
         [HttpPost]
         public async Task<IActionResult> Filter(FilterCertificatesViewModel viewModel)
         {
             ModelState.Remove("StudentData");
+            // Получаем отфильтрованные сертификаты на основе переданных фильтров
             var certificates = await GetFilteredCertificates(viewModel);
 
+            // Получаем первую страницу (10 элементов) отфильтрованных сертификатов
             var paginatedCertificates = certificates
                 .Skip((1 - 1) * PageSize)
                 .Take(PageSize)
                 .ToList();
 
+            // Заполняем ViewBag списками студентов и программ для отображения в представлении
             ViewBag.StudentList = new SelectList(await GetStudentFullNamesWithGroups(), "Value", "Text");
             ViewBag.ProgramList = new SelectList(await GetPrograms(), "Value", "Text");
 
+            // Создаем новую модель представления для отображения на странице Index
             var newViewModel = new ShowMedicalCertificateViewModel
             {
                 Certificates = paginatedCertificates,
@@ -342,9 +347,11 @@ namespace StudentMedicalCertificateSystem.Controllers
         }
 
 
+        // Метод для получения разных страниц отфильтрованных справок
         [HttpGet]
         public async Task<IActionResult> Filter(int page = 1, string studentData = null, int? programId = null, DateTime? illnessDate = null, DateTime? recoveryDate = null)
         {
+            // Создаем модель фильтрации на основе параметров запроса
             FilterCertificatesViewModel filterViewModel = new FilterCertificatesViewModel
             {
                 StudentData = studentData,
@@ -353,16 +360,20 @@ namespace StudentMedicalCertificateSystem.Controllers
                 RecoveryDate = recoveryDate
             };
 
+            // Получаем отфильтрованные справки на основе переданных фильтров
             var certificates = await GetFilteredCertificates(filterViewModel);
 
+            // Получаем указанную страницу (page) отфильтрованных справок
             var paginatedCertificates = certificates
                 .Skip((page - 1) * PageSize)
                 .Take(PageSize)
                 .ToList();
 
+            // Заполняем ViewBag списками студентов и программ для отображения в представлении
             ViewBag.StudentList = new SelectList(await GetStudentFullNamesWithGroups(), "Value", "Text");
             ViewBag.ProgramList = new SelectList(await GetPrograms(), "Value", "Text");
 
+            // Создаем новую модель представления для отображения на странице Index
             var newViewModel = new ShowMedicalCertificateViewModel
             {
                 Certificates = paginatedCertificates,
@@ -379,19 +390,23 @@ namespace StudentMedicalCertificateSystem.Controllers
             return View("Index", newViewModel);
         }
 
+        // Метод для получения отфильтрованных справок на основе переданных фильтров
         private async Task<List<MedicalCertificate>> GetFilteredCertificates(FilterCertificatesViewModel viewModel)
         {
             List<MedicalCertificate> certificates = new List<MedicalCertificate>();
 
             if (viewModel.StudentData != null)
             {
+                // Разбираем строку StudentData для получения имени студента и группы
                 string[] studentData = viewModel.StudentData.Split(" - ");
                 string[] fullName = studentData[0].Split();
                 string groupName = studentData[1];
                 string lastName = fullName[0];
                 string firstName = fullName[1];
                 string patronymic = fullName[2];
+                // Получаем студента по имени и группе из репозитория
                 Student foundStudent = await _studentRepository.GetByFullNameAndGroupAsync(lastName, firstName, patronymic, groupName);
+                // Получаем список справок для найденного студента
                 certificates = await _certificateRepository.GetAllSortedAndIncludedByStudentIdAsync(foundStudent.StudentID);
             }
 
@@ -400,25 +415,33 @@ namespace StudentMedicalCertificateSystem.Controllers
 
 
             bool isDateValid = ilnessDate != DateTime.MinValue && recoveryDate != DateTime.MinValue;
-
+            // Если список справок пуст
             if (isDateValid && certificates.Count() != 0)
             {
+                // Получаем справки по заданному периоду заболевания из репозитория
                 certificates = certificates.Select(c => c)
                     .Where(c => c.IllnessDate >= ilnessDate
                     && c.IllnessDate <= recoveryDate).ToList();
             }
+            // Если список справок пуст
             else if (isDateValid && certificates.Count == 0)
             {
+                // Получаем справки по заданному периоду заболевания из репозитория
                 certificates = await _certificateRepository.GetAllByTimePeriodAsync(ilnessDate, recoveryDate);
             }
 
+            // Если указан id программы и список справок не пуст
             if (viewModel.ProgramID != null && certificates.Count() != 0)
             {
+                // Получаем список справок по указанному id программы
                 var filteredByProgram = await _certificateRepository.GetAllByProgramIdAsync((int)viewModel.ProgramID);
+                // Находим пересечение между отфильтрованными справками в списке и справками по указанной программе
                 certificates = filteredByProgram.Intersect(certificates).ToList();
             }
+            // Если указан id программы, но список справок пуст
             else if (viewModel.ProgramID != null && certificates.Count() == 0)
             {
+                // Получаем справки по указанному id программы из репозитория
                 certificates = await _certificateRepository.GetAllByProgramIdAsync((int)viewModel.ProgramID);
             }
 
@@ -486,7 +509,7 @@ namespace StudentMedicalCertificateSystem.Controllers
         [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> DownloadExcelReport()
         {
-            // Получаем все сертификаты из репозитория
+            // Получаем все справки из репозитория
             var certificates = await _certificateRepository.GetAllIncludedAsync();
             // Генерируем отчет Excel
             var stream = GenerateExcel(certificates);
@@ -498,7 +521,7 @@ namespace StudentMedicalCertificateSystem.Controllers
         [Authorize(Policy = "UserOrAdminPolicy")]
         public async Task<IActionResult> DownloadFilteredExcelReport(string studentData = null, int? programId = null, DateTime? illnessDate = null, DateTime? recoveryDate = null)
         {
-            // Получаем отфильтрованные сертификаты на основе переданных параметров
+            // Получаем отфильтрованные справки на основе переданных параметров
             var filteredCertificates = await GetFilteredCertificates(new FilterCertificatesViewModel
             {
                 ProgramID = programId,
@@ -507,7 +530,7 @@ namespace StudentMedicalCertificateSystem.Controllers
                 RecoveryDate = recoveryDate
             });
             filteredCertificates.Reverse();
-            // Генерируем отчет Excel на основе отфильтрованных сертификатов
+            // Генерируем отчет Excel на основе отфильтрованных справок
             var stream = GenerateExcel(filteredCertificates);
             // Возвращаем отчет в формате файла Excel
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "filtered_report.xlsx");
