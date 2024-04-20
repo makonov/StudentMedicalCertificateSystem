@@ -56,7 +56,7 @@
 
                         <div class="form-group">
                             <label asp-for="Course" class="control-label">Выберите курс</label>
-                            <input asp-for="Course" class="form-control" type="number" value="1" min="1" max="5" />
+                            <input asp-for="Course" class="form-control" type="number" value="@Model.Course" min="1" max="5" />
                             <span asp-validation-for="Course" class="text-danger"></span>
                         </div>
 

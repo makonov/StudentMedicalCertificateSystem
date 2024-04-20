@@ -53,5 +53,10 @@ namespace StudentMedicalCertificateSystem.Repository
             _context.Update(clinic);
             return Save();
         }
+
+        public bool ClinicExists(string name)
+        {
+            return _context.Clinics.Any(c => c.ClinicName == name);
+        }
     }
 }

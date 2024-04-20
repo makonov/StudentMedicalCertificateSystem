@@ -57,5 +57,10 @@ namespace StudentMedicalCertificateSystem.Repository
             _context.Update(group);
             return Save();
         }
+
+        public bool GroupExists(string name)
+        {
+            return _context.StudentGroups.Any(g => g.GroupName == name);
+        }
     }
 }

@@ -22,6 +22,8 @@
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+                        <input hidden name="currentName" class="form-control" value="@Model.ProgramName" />
+
                         <div class="form-group">
                             <label asp-for="ProgramName" class="control-label">Введите наименование программы</label>
                             <input asp-for="ProgramName" class="form-control" />

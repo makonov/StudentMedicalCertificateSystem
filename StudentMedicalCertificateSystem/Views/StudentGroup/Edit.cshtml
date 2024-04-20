@@ -21,6 +21,8 @@
                     <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <input hidden name="currentName" class="form-control" value="@Model.GroupName" />
 
                         <div class="form-group">
                             <label asp-for="GroupName" class="control-label">Введите наименование группы</label>

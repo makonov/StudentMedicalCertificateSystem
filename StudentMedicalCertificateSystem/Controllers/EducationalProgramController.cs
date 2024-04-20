@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StudentMedicalCertificateSystem.Interfaces;
 using StudentMedicalCertificateSystem.Models;
@@ -39,6 +40,12 @@ namespace StudentMedicalCertificateSystem.Controllers
                 return View(program);
             }
 
+            if (_programRepository.ProgramExists(program.ProgramName))
+            {
+                ModelState.AddModelError("ProgramName", "Такая программа уже существует.");
+                return View(program);
+            }
+
             _programRepository.Add(program);
 
             return RedirectToAction("Index");
@@ -57,11 +64,18 @@ namespace StudentMedicalCertificateSystem.Controllers
         }
 
         [HttpPost]
-        public IActionResult Edit(int id, EducationalProgram program)
+        public IActionResult Edit(int id, string currentName, EducationalProgram program)
         {
             if (!ModelState.IsValid)
             {
                 ModelState.AddModelError("", "Произошла ошибка");
+                return View(program);
+            }
+
+            if (currentName != program.ProgramName && _programRepository.ProgramExists(program.ProgramName))
+            {
+                ModelState.AddModelError("ProgramName", "Такая программа уже существует.");
+                program.ProgramName = currentName;
                 return View(program);
             }
 

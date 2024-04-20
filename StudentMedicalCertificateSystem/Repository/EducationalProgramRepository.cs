@@ -51,5 +51,10 @@ namespace StudentMedicalCertificateSystem.Repository
             _context.Update(program);
             return Save();
         }
+
+        public bool ProgramExists(string name)
+        {
+            return _context.EducationalPrograms.Any(p => p.ProgramName == name);
+        }
     }
 }

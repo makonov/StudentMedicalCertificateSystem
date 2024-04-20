@@ -22,6 +22,9 @@
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+                        <input hidden name="currentName" class="form-control" value="@Model.DiagnosisName" />
+                        <input hidden name="currentCode" class="form-control" value="@Model.Code" />
+
                         <div class="form-group">
                             <label asp-for="DiagnosisName" class="control-label">Введите наименование диагноза</label>
                             <input asp-for="DiagnosisName" class="form-control" />

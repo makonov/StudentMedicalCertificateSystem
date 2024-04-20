@@ -486,7 +486,8 @@ namespace StudentMedicalCertificateSystem.Controllers
         [Authorize(Policy = "AllRolesPolicy")]
         public IActionResult ImageView(string imagePath)
         {
-            return View("ImageView", imagePath);
+            string pathWithForwardSlashes = "/" + imagePath.Replace('\\', '/');
+            return View("ImageView", pathWithForwardSlashes);
         }
 
         [HttpPost]

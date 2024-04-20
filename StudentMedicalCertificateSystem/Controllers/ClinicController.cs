@@ -39,6 +39,12 @@ namespace StudentMedicalCertificateSystem.Controllers
                 return View(clinic);
             }
 
+            if (_clinicRepository.ClinicExists(clinic.ClinicName))
+            {
+                ModelState.AddModelError("ClinicName", "Такая больница уже существует.");
+                return View(clinic);
+            }
+
             _clinicRepository.Add(clinic);
 
             return RedirectToAction("Index");
@@ -58,11 +64,18 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Clinic clinic)
+        public IActionResult Edit(int id, string currentName, Clinic clinic)
         {
             if (!ModelState.IsValid)
             {
                 ModelState.AddModelError("", "Произошла ошибка");
+                return View(clinic);
+            }
+
+            if (currentName != clinic.ClinicName && _clinicRepository.ClinicExists(clinic.ClinicName))
+            {
+                ModelState.AddModelError("ClinicName", "Такая больница уже существует.");
+                clinic.ClinicName = currentName;
                 return View(clinic);
             }
 

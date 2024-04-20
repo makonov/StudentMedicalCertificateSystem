@@ -54,5 +54,15 @@ namespace StudentMedicalCertificateSystem.Repository
             _context.Update(diagnosis);
             return Save();
         }
+
+        public bool DiagnosisExistsByName(string name)
+        {
+            return _context.Diagnoses.Any(d => d.DiagnosisName == name);
+        }
+
+        public bool DiagnosisExistsByCode(string code)
+        {
+            return _context.Diagnoses.Any(d => d.Code == code);
+        }
     }
 }

@@ -22,6 +22,8 @@
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+                        <input hidden name="currentName" class="form-control" value="@Model.ClinicName" />
+
                         <div class="form-group">
                             <label asp-for="ClinicName" class="control-label">Введите наименование больницы</label>
                             <input asp-for="ClinicName" class="form-control" />

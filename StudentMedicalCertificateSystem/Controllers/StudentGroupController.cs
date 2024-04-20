@@ -50,6 +50,13 @@ namespace StudentMedicalCertificateSystem.Controllers
                 return View(group);
             }
 
+            if (_groupRepository.GroupExists(group.GroupName))
+            {
+                ModelState.AddModelError("GroupName", "Такая группа уже существует.");
+                ViewBag.ProgramList = new SelectList(await GetPrograms(), "Value", "Text");
+                return View(group);
+            }
+
             _groupRepository.Add(group);
 
             return RedirectToAction("Index");
@@ -69,12 +76,20 @@ namespace StudentMedicalCertificateSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, StudentGroup group)
+        public async Task<IActionResult> Edit(int id, string currentName, StudentGroup group)
         {
             if (!ModelState.IsValid)
             {
                 ModelState.AddModelError("", "Произошла ошибка");
                 ViewBag.ProgramList = new SelectList(await GetPrograms(), "Value", "Text");
+                return View(group);
+            }
+
+            if (currentName != group.GroupName && _groupRepository.GroupExists(group.GroupName))
+            {
+                ModelState.AddModelError("GroupName", "Такая группа уже существует.");
+                ViewBag.ProgramList = new SelectList(await GetPrograms(), "Value", "Text");
+                group.GroupName = currentName;
                 return View(group);
             }
 

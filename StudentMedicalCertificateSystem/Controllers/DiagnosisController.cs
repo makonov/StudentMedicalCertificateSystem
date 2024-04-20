@@ -39,6 +39,13 @@ namespace StudentMedicalCertificateSystem.Controllers
                 return View(diagnosis);
             }
 
+            if (_diagnosisRepository.DiagnosisExistsByName(diagnosis.DiagnosisName) ||
+                _diagnosisRepository.DiagnosisExistsByCode(diagnosis.Code))
+            {
+                ModelState.AddModelError("DiagnosisName", "Такой диагноз уже существует.");
+                return View(diagnosis);
+            }
+
             _diagnosisRepository.Add(diagnosis);
             return RedirectToAction("Index");
         }
@@ -57,11 +64,21 @@ namespace StudentMedicalCertificateSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Diagnosis diagnosis)
+        public IActionResult Edit(int id, string currentName, string currentCode, Diagnosis diagnosis)
         {
             if (diagnosis.Code == null && diagnosis.DiagnosisName == null)
             {
                 ModelState.AddModelError("", "Хотя бы одно поле должно быть заполнено");
+                return View(diagnosis);
+            }
+
+            if ((currentName != diagnosis.DiagnosisName && _diagnosisRepository.DiagnosisExistsByName(diagnosis.DiagnosisName))
+                || (currentCode != diagnosis.Code &&
+                _diagnosisRepository.DiagnosisExistsByCode(diagnosis.Code)))
+            {
+                ModelState.AddModelError("DiagnosisName", "Такой диагноз уже существует.");
+                diagnosis.DiagnosisName = currentName;
+                diagnosis.Code = currentCode;
                 return View(diagnosis);
             }
 
